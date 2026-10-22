@@ -35,20 +35,27 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-6 py-8">
 
-        <!-- Search and Filter Bar -->
+       <!-- Search and Filter Bar -->
         <div class="bg-white p-4 rounded-lg border border-neutral-200 mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
-            <input type="text" placeholder="Search for lost items..."
+            <input type="text" id="searchInput" placeholder="Search for lost items..."
                 class="w-full md:w-1/3 px-4 py-2 bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500">
 
-            <div class="flex gap-4 w-full md:w-auto">
-                <select class="px-4 py-2 bg-neutral-50 border border-neutral-300 rounded-md text-neutral-800 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500">
-                    <option>All Categories</option>
-                    <option>Electronics</option>
-                    <option>IDs & Cards</option>
-                    <option>Bags</option>
+            <!-- Ginawang flex-col sa mobile, flex-row sa larger screens -->
+            <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                <select id="categoryFilter" class="w-full sm:w-auto px-4 py-2 bg-neutral-50 border border-neutral-300 rounded-md text-neutral-800 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500">
+                    <option value="All Categories">All Categories</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="IDs & Cards">IDs & Cards</option>
+                    <option value="Bags">Bags</option>
+                    <option value="Others">Others</option>
                 </select>
 
-                <div class="flex items-center space-x-4 bg-neutral-50 px-4 py-2 rounded-md border border-neutral-300">
+                <!-- Ginawang flex-wrap para hindi maputol ang radio buttons -->
+                <div class="flex flex-wrap items-center justify-center gap-4 bg-neutral-50 px-4 py-2 rounded-md border border-neutral-300 w-full sm:w-auto">
+                    <label class="flex items-center space-x-2 text-sm text-neutral-700">
+                        <input type="radio" name="status" value="all" class="accent-neutral-800" checked>
+                        <span>All</span>
+                    </label>
                     <label class="flex items-center space-x-2 text-sm text-neutral-700">
                         <input type="radio" name="status" value="lost" class="accent-neutral-800">
                         <span>Lost</span>
@@ -60,7 +67,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Items Grid Container -->
         <!-- grid-cols-1 (Mobile), md:grid-cols-2 (Tablet), lg:grid-cols-4 (Desktop) -->
         <div id="itemsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -99,30 +105,31 @@
             </div>
 
         </div>
+        
         <!-- Report Item Modal (Nakatago by default gamit ang 'hidden' class) -->
+   
+        <!-- COMPACT Report Item Modal -->
     <div id="reportModal" class="fixed inset-0 bg-black/80 hidden flex justify-center items-center z-50 backdrop-blur-sm">
-        <div class="bg-neutral-200 p-8 rounded-xl border border-neutral-300 w-full max-w-lg shadow-2xl relative">
+        <div class="bg-neutral-200 p-5 rounded-xl border border-neutral-300 w-full max-w-lg shadow-2xl relative max-h-[95vh] overflow-y-auto">
             
-            <!-- Close Button -->
-            <button id="closeReportBtn" class="absolute top-4 right-4 text-neutral-700 hover:text-gray-900 text-xl font-bold">&times;</button>
+            <button id="closeReportBtn" class="absolute top-3 right-4 text-neutral-700 hover:text-gray-900 text-xl font-bold">&times;</button>
+            <h2 class="text-xl font-bold text-neutral-700 mb-4">Report an Item</h2>
             
-            <h2 class="text-2xl font-bold text-neutral-700 mb-6">Report an Item</h2>
-            
-            <form id="reportForm" class="space-y-4">
+            <form id="reportForm" class="space-y-3"> <!-- Ginawang space-y-3 para mas dikit-dikit -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
-                    <input type="text" id="itemName" required class="w-full px-4 py-2 bg-neutral-200 border border-neutral-300 rounded-lg text-neutral-700 focus:outline-none focus:border-neutral-500">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Item Name</label>
+                    <input type="text" id="itemName" required class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea id="itemDesc" required rows="3" class="w-full px-4 py-2 bg-neutral-200 border border-neutral-300 rounded-lg text-neutral-700 focus:outline-none focus:border-neutral-500"></textarea>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="itemDesc" required rows="2" class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500"></textarea>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                        <select id="itemCategory" class="w-full px-4 py-2 bg-neutral-200 border border-neutral-300 rounded-lg text-neutral-700 focus:outline-none focus:border-neutral-500">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                        <select id="itemCategory" class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
                             <option value="Electronics">Electronics</option>
                             <option value="IDs & Cards">IDs & Cards</option>
                             <option value="Bags">Bags</option>
@@ -130,33 +137,92 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select id="itemStatus" class="w-full px-4 py-2 bg-neutral-200 border border-neutral-300 rounded-lg text-neutral-700 focus:outline-none focus:border-neutral-500">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                        <select id="itemStatus" class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
                             <option value="lost">Lost (I lost this)</option>
                             <option value="found">Found (I found this)</option>
                         </select>
                     </div>
                 </div>
+
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Lost/Found</label>
-                    <input type="date" id="itemDate" required class="w-full px-4 py-2 bg-neutral-200 border border-neutral-300 rounded-lg text-neutral-700 focus:outline-none focus:border-neutral-500">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Date Lost/Found</label>
+                    <input type="date" id="itemDate" required class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Location (Where it was lost/found)</label>
-                    <input type="text" id="itemLocation" required class="w-full px-4 py-2 bg-neutral-200 border border-neutral-300 rounded-lg text-neutral-700 focus:outline-none focus:border-neutral-500">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Location</label>
+                    <button type="button" id="getLocationBtn" class="mb-1.5 w-full py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold rounded flex justify-center items-center gap-1">
+                        📍 Auto-Detect Exact Location
+                    </button>
+                    <p id="geoStatus" class="text-[10px] text-neutral-500 mb-1.5 text-center hidden"></p>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="campusBuilding" class="w-full px-2 py-1.5 bg-neutral-100 border border-neutral-300 rounded text-neutral-700 text-xs focus:outline-none">
+                            <option value="">Select Building</option>
+                            <option value="Gusaling Corazon Aquino">GCA</option>
+                            <option value="Gusaling Villegas">GV</option>
+                            <option value="University Library">Library</option>
+                            <option value="Campus Grounds">Grounds</option>
+                        </select>
+                        <select id="campusRoom" disabled class="w-full px-2 py-1.5 bg-neutral-100 border border-neutral-300 rounded text-neutral-700 text-xs focus:outline-none disabled:opacity-50">
+                            <option value="">Area/Room</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="latitude">
+                    <input type="hidden" id="longitude">
                 </div>
+
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Upload Picture (Optional)</label>
-                    <input type="file" id="itemImage" accept="image/*" class="w-full px-4 py-2 bg-neutral-200 border border-neutral-300 rounded-lg text-neutral-700 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Upload Picture</label>
+                    <input type="file" id="itemImage" accept="image/*" class="w-full text-xs text-neutral-700 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
                 </div>
 
-                <p id="reportMessage" class="text-sm font-bold text-center hidden"></p>
+                <p id="reportMessage" class="text-xs font-bold text-center hidden"></p>
 
-                <button type="submit" class="w-full py-3 mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition shadow-lg">
+                <button type="submit" class="w-full py-2 mt-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded transition shadow">
                     Submit Report
                 </button>
             </form>
+        </div>
+    </div>
+
+   
+    <!-- Item Details Modal (Nakatago by default) -->
+   <!-- ITEM DETAILS MODAL -->
+    <div id="itemDetailsModal" class="fixed inset-0 bg-black/80 hidden flex justify-center items-center z-50 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-xl border border-neutral-300 w-full max-w-md shadow-2xl relative">
+            <button onclick="closeItemDetails()" class="absolute top-4 right-4 text-neutral-500 hover:text-neutral-800 text-2xl font-bold">&times;</button>
+            
+            <!-- Image Container -->
+            <div id="detailImageContainer" class="h-48 bg-neutral-100 w-full rounded-lg mb-4 flex items-center justify-center overflow-hidden border border-neutral-200">
+                <!-- Dito papasok ang litrato -->
+            </div>
+
+            <div class="flex justify-between items-start mb-2">
+                <h2 id="detailName" class="text-2xl font-bold text-neutral-900">Item Name</h2>
+                <span id="detailStatus" class="text-xs font-bold px-2 py-1 rounded tracking-wide">STATUS</span>
+            </div>
+            
+            <p class="text-sm text-neutral-500 mb-4">Category: <span id="detailCategory" class="font-medium text-neutral-700">Category</span></p>
+            
+            <div class="bg-neutral-50 p-4 rounded-lg border border-neutral-200 mb-4">
+                <p class="text-sm text-neutral-800 font-semibold mb-1">Description:</p>
+                <p id="detailDesc" class="text-sm text-neutral-600 mb-4">Description here.</p>
+                
+                <p class="text-sm text-neutral-800 font-semibold mb-1">Location & Date:</p>
+                <p class="text-sm text-neutral-600">📍 <span id="detailLocation">Location</span></p>
+                
+                <!-- GOOGLE MAPS LINK (Nakatago by default, lalabas lang pag may GPS) -->
+                <a id="detailMapLink" href="#" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 hover:underline hidden ml-5 mb-2 block font-medium">View exact location in Google Maps</a>
+                
+                <p class="text-sm text-neutral-600">📅 <span id="detailDate">Date</span></p>
+            </div>
+            
+            <!-- CONTACT BUTTON (Siguraduhing id="actionBtn" ito) -->
+            <button id="actionBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition shadow-md">
+                Contact Owner
+            </button>
         </div>
     </div>
     </main>
