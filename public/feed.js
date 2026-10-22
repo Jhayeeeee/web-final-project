@@ -84,7 +84,8 @@ if (reportForm) {
         try {
             const response = await fetch('http://localhost:3000/api/items', {
                 method: 'POST',
-                // TANGGALIN ANG HEADERS dahil kusa itong iseset ng FormData
+                
+            // TANGGALIN ANG HEADERS dahil kusa itong iseset ng FormData
                 body: formData
             });
 
@@ -119,6 +120,7 @@ if (reportForm) {
     const categoryFilter = document.getElementById('categoryFilter');
     const statusFilters = document.getElementsByName('status');
 
+    
     // --- LOAD ITEMS (GET DATA FROM MONGODB) ---
     async function loadItems() {
         try {
@@ -142,14 +144,15 @@ if (reportForm) {
         }
 
         itemsToDisplay.forEach(item => {
-            // Ibinalik natin sa design mo: Pula kapag LOST, Green kapag FOUND
+    
+            // Design badge
             const badgeStyle = item.status === 'found' 
                 ? 'bg-green-600 text-white' 
                 : 'bg-red-600 text-white';
                 
             const buttonText = item.status === 'found' ? 'Claim Item' : 'View Details';
 
-         // Pinalitan ang dark background ng totoong image o placeholder
+         // Image placeholder
             const imageContent = item.imageURL 
                 ? `<img src="${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">` 
                 : `<p class="text-neutral-400 text-sm">[ No Image Yet ]</p>`;
@@ -210,7 +213,7 @@ if (reportForm) {
     // Patakbuhin sa simula
     loadItems();
 
-  
+
     // --- ITEM DETAILS MODAL LOGIC ---
 function openItemDetails(itemId) {
     
