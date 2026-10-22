@@ -1,8 +1,8 @@
+// --- REGISTRATION LOGIC ---
 const registerForm = document.getElementById('registerForm');
 
 if (registerForm){
     registerForm.addEventListener('submit', async (e) => {
-
         e.preventDefault();
 
         const fullName = document.getElementById('fullName').value;
@@ -11,16 +11,22 @@ if (registerForm){
         const confirmPassword = document.getElementById('confirmPassword').value;
         const errorMessage = document.getElementById('errorMessage');
        
-
+        // 1. Check kung magkapareho ang password
         if (password !== confirmPassword){
             errorMessage.textContent = 'Passwords do not match';
             errorMessage.classList.remove('hidden');
             return;
         }
 
-            errorMessage.classList.add('hidden');
-         
+        // 2. Client-Side Validation: Checking kung @university.edu.ph ang email domain (Inakyat natin dito!)
+        if (!email.endsWith('@university.edu.ph')) {
+            errorMessage.textContent = "Please use your official university email (@university.edu.ph).";
+            errorMessage.classList.remove('hidden');
+            return;
+        }
 
+        errorMessage.classList.add('hidden');
+         
         try {
             const response = await fetch('http://localhost:3000/api/register', {
                 method: 'POST',
@@ -33,17 +39,9 @@ if (registerForm){
             const data = await response.json();
             const successMessage = document.getElementById('successMessage');
 
-            // Client-Side Validation: Checking kung @plm.edu.ph ang email domain
-        if (!email.endsWith('@university.edu.ph')) {
-            errorMessage.textContent = "Please use your official university email (@university.edu.ph).";
-            errorMessage.classList.remove('hidden');
-            return; // Ihihinto ang proseso dito
-        }
-
             if (response.ok) {
                 // Kapag successful ang pag-save sa database
                 errorMessage.classList.add('hidden');
-
                 successMessage.textContent = "Account successfully created!";
                 successMessage.classList.remove('hidden');
                 
@@ -62,7 +60,52 @@ if (registerForm){
             errorMessage.textContent = "Cannot connect to server. Please try again.";
             errorMessage.classList.remove('hidden');
         }
+    });
+}
 
+// --- LOGIN LOGIC ---
+const loginForm = document.getElementById('loginForm');
 
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Pinipigilan ang pag-refresh ng page
+
+        // Kinukuha ang tinype na email at password
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const loginErrorMessage = document.getElementById('loginErrorMessage');
+
+        try {
+            // Ipinapadala sa backend ang data para i-verify sa database
+            const response = await fetch('http://localhost:3000/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Kapag tama ang email at password
+                loginErrorMessage.classList.add('hidden');
+                
+                // I-save ang user details sa browser para malaman ng system na naka-login siya
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                // Ilipat ang user sa Dashboard (feed.html)
+                window.location.href = 'feed.html';
+            } else {
+                // Kapag mali ang password o email, ipapakita ang error
+                loginErrorMessage.textContent = data.message;
+                loginErrorMessage.classList.remove('hidden');
+            }
+        } catch (error) {
+            // Kapag nakapatay ang Node.js server
+            console.error("Login Connection Error:", error);
+            loginErrorMessage.textContent = "Cannot connect to server. Please try again.";
+            loginErrorMessage.classList.remove('hidden');
+        }
     });
 }
