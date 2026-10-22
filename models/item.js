@@ -8,9 +8,11 @@ const itemSchema = new mongoose.Schema({
     location: { type: String, required: true },
     dateReported: { type: Date, default: Date.now },
     reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Naka-link sa ID ng nag-report
-    imageUrl: { type: String }, // Placeholder para sa link ng picture
+    imageURL: { type: String }, // Placeholder para sa link ng picture
     location: { type: String, required: true },
-    incidentDate: { type: String, required: true }, // BAGONG DAGDAG
+    incidentDate: { type: String, required: true }, 
+    latitude:{type: Number},
+    longitude:{type: Number}
 });
 
 module.exports = mongoose.model('Item', itemSchema);

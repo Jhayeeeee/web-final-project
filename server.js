@@ -6,7 +6,19 @@
     const bcrypt = require("bcrypt");
     const User = require("./models/user");
     const Item = require("./models/item");
+    const multer = require('multer');
+    
 
+    const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/') // Dito ise-save ang mga litrato
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // Unique filename para iwas duplicate
+    }
+});
+    const upload = multer({ storage: storage });
+    
     const app = express();
 
     app.use(cors());
@@ -21,6 +33,9 @@
     app.get("/api/test", (req, res) => {
     res.json({ message: "Test connection successful" });
     });
+
+
+
 
     // POST Route para sa Registration
     app.post("/api/register", async (req, res) => {
@@ -94,12 +109,14 @@
     }
     });
 
+
     // POST Route para mag-report ng Lost or Found Item
-    // POST Route para mag-report ng Lost or Found Item
-app.post('/api/items', async (req, res) => {
+app.post('/api/items', upload.single('image'), async (req, res) => {
     try {
         // 1. DAPAT NANDITO ANG incidentDate (Line 101)
-        const { itemName, description, category, status, location, incidentDate, reportedBy } = req.body;
+        const { itemName, description, category, status, location, incidentDate, reportedBy,latitude,longitude} = req.body;
+        
+        const imageURL = req.file ? '/uploads/' + req.file.filename : null;
 
         const newItem = new Item({
             itemName,
@@ -108,7 +125,10 @@ app.post('/api/items', async (req, res) => {
             status,
             location,
             incidentDate, // 2. AT DAPAT NANDITO RIN (Line 111)
-            reportedBy
+            reportedBy,
+            latitude,
+            longitude,
+            imageURL
         });
 
         await newItem.save();
@@ -124,11 +144,17 @@ app.post('/api/items', async (req, res) => {
     }
 });
 
-// GET Route for items
+
+
+// GET Route para i-load ang lahat ng items sa Feed
 app.get('/api/items', async (req, res) => {
     try {
-        // Kukunin lahat ng items at iso-sort (pinakabago ang mauuna)
-        const items = await Item.find().sort({ dateReported: -1 });
+        // Safe populate para hindi mag-crash ang server kung may sirang test data
+        const items = await Item.find().populate({
+            path: 'reportedBy',
+            select: 'email',
+            strictPopulate: false
+        });
         res.status(200).json(items);
     } catch (error) {
         console.error("Error fetching items:", error);
