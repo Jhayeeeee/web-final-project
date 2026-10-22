@@ -257,13 +257,21 @@ function openItemDetails(itemId) {
     const actionBtn = document.getElementById('actionBtn');
     actionBtn.textContent = item.status === 'found' ? 'Contact Finder' : 'Contact Owner';
 
-    // DAGDAG ITO: Ito ang mismong magbubukas ng Email App mo
     const contactEmail = (item.reportedBy && item.reportedBy.email) ? item.reportedBy.email : 'admin@plm.edu.ph';
-    actionBtn.onclick = () => {
+    
+    // Alisin ang lumang listener para laging sariwa
+    const newActionBtn = actionBtn.cloneNode(true);
+    actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
+
+    // Gamitin natin ang Clipboard API para direktang makopya ang email
+    document.getElementById('actionBtn').addEventListener('click', () => {
         const subject = encodeURIComponent(`PLM Lost & Found: Regarding your post about ${item.itemName}`);
         const body = encodeURIComponent(`Hello!\n\nI saw your post on the PLM Lost & Found Portal regarding the ${item.itemName}.\n\n[ Type your message here... ]`);
-        window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${body}`;
-    };
+        
+        // Direktang magbubukas ng Gmail compose window sa bagong tab
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contactEmail}&su=${subject}&body=${body}`;
+        window.open(gmailUrl, '_blank');
+    });
     
 
     // Ipakita ang modal
