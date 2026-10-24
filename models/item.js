@@ -4,7 +4,7 @@ const itemSchema = new mongoose.Schema({
     itemName: { type: String, required: true },
     description: { type: String, required: true },
     category: { type: String, required: true }, // Halimbawa: 'Electronics', 'IDs & Cards', 'Bags'
-    status: { type: String, enum: ['lost', 'found', 'claimed'], required: true },
+    status: { type: String, enum: ['lost', 'found', 'claimed', 'surrendered'], required: true },
     location: { type: String, required: true },
     dateReported: { type: Date, default: Date.now },
     reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Naka-link sa ID ng nag-report

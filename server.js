@@ -147,7 +147,6 @@ app.post('/api/items', upload.single('image'), async (req, res) => {
 
 
 
-// GET Route para i-load ang lahat ng items sa Feed
 app.get('/api/items', async (req, res) => {
     try {
         // Safe populate para hindi mag-crash ang server kung may sirang test data
@@ -160,6 +159,37 @@ app.get('/api/items', async (req, res) => {
     } catch (error) {
         console.error("Error fetching items:", error);
         res.status(500).json({ message: "Server error while fetching items." });
+    }
+});
+
+// DELETE Route para burahin ang item
+app.delete('/api/items/:id', async (req, res) => {
+    try {
+        const itemId = req.params.id;
+        await Item.findByIdAndDelete(itemId);
+        res.status(200).json({ message: "Item successfully deleted!" });
+    } catch (error) {
+        console.error("Error deleting item:", error);
+        res.status(500).json({ message: "Server error while deleting item." });
+    }
+});
+
+// PUT Route para i-update ang status ng item (papuntang 'surrendered' o 'claimed')
+app.put('/api/items/:id/status', async (req, res) => {
+    try {
+        const itemId = req.params.id;
+        const { status } = req.body; // Kukunin ang bagong status mula sa frontend
+        
+        const updatedItem = await Item.findByIdAndUpdate(
+            itemId,
+            { status: status },
+            { new: true } // Ibig sabihin ibabalik niya yung updated na data
+        );
+        
+        res.status(200).json({ message: "Status successfully updated!", item: updatedItem });
+    } catch (error) {
+        console.error("Error updating status:", error);
+        res.status(500).json({ message: "Server error while updating status." });
     }
 });
 

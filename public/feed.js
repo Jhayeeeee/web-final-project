@@ -1,5 +1,20 @@
     const logoutBtn = document.getElementById("logoutBtn");
 
+    // Kunin ang user data mula sa localStorage
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+
+    // I-update ang pangalan sa Navbar
+    const navUserName = document.getElementById('navUserName');
+    if (navUserName && storedUser && storedUser.fullName) {
+        navUserName.textContent = storedUser.fullName;
+        
+        // Para mapalitan din yung letrang "U" sa bilog ng unang letra ng pangalan nila
+        const userInitialCircle = document.querySelector('.rounded-full.bg-neutral-700');
+        if (userInitialCircle) {
+            userInitialCircle.textContent = storedUser.fullName.charAt(0).toUpperCase();
+        }
+    }
+
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
 
@@ -253,26 +268,35 @@ function openItemDetails(itemId) {
         ? 'text-xs font-bold px-2 py-1 rounded tracking-wide bg-green-600 text-white' 
         : 'text-xs font-bold px-2 py-1 rounded tracking-wide bg-red-600 text-white';
 
-    // Baguhin ang text ng Action Button
+   // Baguhin ang text ng Action Button
     const actionBtn = document.getElementById('actionBtn');
-    actionBtn.textContent = item.status === 'found' ? 'Contact Finder' : 'Contact Owner';
+    
+    // 1. Baguhin ang text ng button depende sa status
+    if (item.status === 'found') {
+        actionBtn.textContent = 'Contact Finder';
+    } else if (item.status === 'surrendered') {
+        actionBtn.textContent = 'Proceed to Admin Office';
+    } else {
+        actionBtn.textContent = 'Contact Owner'; // Para sa 'lost'
+    }
 
     const contactEmail = (item.reportedBy && item.reportedBy.email) ? item.reportedBy.email : 'admin@plm.edu.ph';
-    
-    // Alisin ang lumang listener para laging sariwa
+
+    // 2. Alisin ang mga lumang click listener para hindi magdoble-doble
     const newActionBtn = actionBtn.cloneNode(true);
     actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
 
-    // Gamitin natin ang Clipboard API para direktang makopya ang email
+    // 3. I-setup ang tamang action kapag pinindot ang button
     document.getElementById('actionBtn').addEventListener('click', () => {
-        const subject = encodeURIComponent(`PLM Lost & Found: Regarding your post about ${item.itemName}`);
-        const body = encodeURIComponent(`Hello!\n\nI saw your post on the PLM Lost & Found Portal regarding the ${item.itemName}.\n\n[ Type your message here... ]`);
-        
-        // Direktang magbubukas ng Gmail compose window sa bagong tab
-        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contactEmail}&su=${subject}&body=${body}`;
-        window.open(gmailUrl, '_blank');
+        if (item.status === 'surrendered') {
+            document.getElementById('adminInfoModal').classList.remove('hidden');
+        } else {
+            const subject = encodeURIComponent(`University of Manila Lost & Found: Regarding your post about ${item.itemName}`);
+            const body = encodeURIComponent(`Hello!\n\nI saw your post on the University Lost & Found Portal regarding the ${item.itemName}.\n\n[ Type your message here... ]`);
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contactEmail}&su=${subject}&body=${body}`;
+            window.open(gmailUrl, '_blank');
+        }
     });
-    
 
     // Ipakita ang modal
     document.getElementById('itemDetailsModal').classList.remove('hidden');
@@ -346,3 +370,32 @@ if (getLocationBtn) {
     });
 }
 
+// --- DATE RESTRICTION LOGIC ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Ginamit na natin ang tamang ID na 'itemDate'
+    const dateInput = document.getElementById('itemDate'); 
+
+    if (dateInput) {
+        const today = new Date();
+        // Inaayos ang timezone para sumakto sa oras sa Pilipinas
+        const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
+        const formattedToday = localDate.toISOString().split('T')[0];
+        
+        // I-set ang maximum date (bawal ang future date)
+        dateInput.setAttribute('max', formattedToday);
+
+        // I-set ang minimum date (hanggang 1 buwan nakalipas lang pwede)
+        const pastDate = new Date(localDate);
+        pastDate.setMonth(pastDate.getMonth() - 1);
+        const formattedPast = pastDate.toISOString().split('T')[0];
+        dateInput.setAttribute('min', formattedPast);
+    }
+});
+
+// Isara ang Admin Info Modal kapag pinindot ang "Got it"
+const closeAdminInfoBtn = document.getElementById('closeAdminInfoBtn');
+if (closeAdminInfoBtn) {
+    closeAdminInfoBtn.addEventListener('click', () => {
+        document.getElementById('adminInfoModal').classList.add('hidden');
+    });
+}

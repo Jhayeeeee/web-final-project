@@ -15,9 +15,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+
+    
     role: {
         type: String,
-        default: 'student' // Lahat ng gagawa ng account ay automatic na magiging 'student'
+        enum: ['student', 'admin'],
+        default: 'student' // 'student' ang default para lahat ng bagong register ay student agad
     }
 }, { timestamps: true });  
 
