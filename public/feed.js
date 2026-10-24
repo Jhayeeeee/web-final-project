@@ -160,12 +160,23 @@ if (reportForm) {
 
         itemsToDisplay.forEach(item => {
     
-            // Design badge
-            const badgeStyle = item.status === 'found' 
-                ? 'bg-green-600 text-white' 
-                : 'bg-red-600 text-white';
-                
-            const buttonText = item.status === 'found' ? 'Claim Item' : 'View Details';
+          // Design badge and button text based on status
+        let badgeStyle = 'bg-red-600 text-white'; // Default para sa 'lost'
+        let badgeText = item.status.toUpperCase();
+        let buttonText = 'View Details';
+
+        if (item.status === 'found') {
+            badgeStyle = 'bg-green-600 text-white';
+            buttonText = 'Claim Item';
+        } else if (item.status === 'surrendered') {
+            badgeStyle = 'bg-orange-500 text-white';
+            badgeText = 'AT ADMIN';
+            buttonText = 'Claim at Admin';
+        } else if (item.status === 'claimed') {
+            badgeStyle = 'bg-neutral-600 text-white';
+            badgeText = 'CLAIMED';
+            buttonText = 'View Record';
+        }
 
          // Image placeholder
             const imageContent = item.imageURL 

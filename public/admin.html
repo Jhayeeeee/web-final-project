@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Lost & Found - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-neutral-100 min-h-screen font-sans">
+
+    <!-- Admin Navigation -->
+    <nav class="bg-neutral-900 text-white p-4 shadow-md">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wider"> University Lost & Found Panel</h1>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-neutral-300">Admin Account</span>
+                <button onclick="window.location.href='index.html'" class="text-sm font-semibold hover:text-red-400 transition">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto p-6 mt-6">
+        <div class="mb-8 border-b border-neutral-300 pb-4">
+            <h2 class="text-2xl font-bold text-neutral-800">Surrendered Items Inventory</h2>
+            <p class="text-sm text-neutral-600">List of physical items currently at the Admin Office awaiting claim.</p>
+        </div>
+
+        <!-- Dito lalabas ang mga surrendered items -->
+        <div id="adminInventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <p class="text-neutral-500">Loading inventory...</p>
+        </div>
+    </main>
+
+    <script src="admin.js"></script>
+</body>
+</html>

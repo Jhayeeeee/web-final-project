@@ -94,8 +94,12 @@ if (loginForm) {
                 // I-save ang user details sa browser para malaman ng system na naka-login siya
                 localStorage.setItem('user', JSON.stringify(data.user));
 
-                // Ilipat ang user sa Dashboard (feed.html)
-                window.location.href = 'feed.html';
+                // Titingnan kung sino ang nag-login para i-redirect sa tamang page
+                if (data.user.role === 'admin') {
+                    window.location.href = 'admin.html'; // Pupunta sa Admin Panel
+                } else {
+                    window.location.href = 'feed.html'; // Pupunta sa Student Dashboard
+                }
             } else {
                 // Kapag mali ang password o email, ipapakita ang error
                 loginErrorMessage.textContent = data.message;
