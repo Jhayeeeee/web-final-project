@@ -152,39 +152,40 @@ cancelSurrenderBtn.addEventListener('click', () => {
 });
 
 // 3. Kapag pinindot ang "Yes, Surrendered" (Konekta sa backend)
+
 confirmSurrenderBtn.addEventListener('click', async () => {
     if (!itemToSurrenderId) return;
 
-    // Gawing "Updating..." ang text habang naglo-load
     confirmSurrenderBtn.textContent = "Updating...";
     confirmSurrenderBtn.disabled = true;
 
     try {
+        const token = localStorage.getItem('token'); 
+
         const response = await fetch(`http://localhost:3000/api/items/${itemToSurrenderId}/status`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatusToSet })
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ status: 'surrendered' }) 
         });
 
         if (response.ok) {
-            surrenderModal.classList.add('hidden'); // Itago ang modal
-            loadMyItems(); // Kusa nitong babaguhin yung button sa UI mo
+            surrenderModal.classList.add('hidden'); 
+            loadMyItems(); 
         } else {
-            alert("Failed to update status.");
+            alert("Failed to update post status.");
         }
     } catch (error) {
         console.error('Error updating status:', error);
         alert("Cannot connect to server.");
     } finally {
-        // Ibalik sa normal ang button
         confirmSurrenderBtn.textContent = "Yes, Surrendered";
         confirmSurrenderBtn.disabled = false;
-        itemToSurrenderId = null;
-        newStatusToSet = null;
+        itemToSurrenderId = null; // I-reset
     }
 });
-
-
 
 
 // --- CUSTOM DELETE MODAL LOGIC ---

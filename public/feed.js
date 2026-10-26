@@ -186,11 +186,7 @@ if (reportForm) {
             badgeStyle = 'bg-orange-500 text-white';
             badgeText = 'AT ADMIN';
             buttonText = 'Claim at Admin';
-        } else if (item.status === 'claimed') {
-            badgeStyle = 'bg-green-500 text-white';
-            badgeText = 'CLAIMED';
-            buttonText = 'View Record';
-        }
+        } else if (item.status === 'claimed') return;
 
          // Image placeholder
             const imageContent = item.imageURL 

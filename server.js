@@ -157,7 +157,6 @@ app.post('/api/items', upload.single('image'), async (req, res) => {
         res.status(500).json({ message: "Server error while saving the item." });
     }
 });
-
 app.get('/api/items', async (req, res) => {
     try {
         const items = await Item.find().populate({

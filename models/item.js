@@ -12,7 +12,8 @@ const itemSchema = new mongoose.Schema({
     location: { type: String, required: true },
     incidentDate: { type: String, required: true }, 
     latitude:{type: Number},
-    longitude:{type: Number}
+    longitude:{type: Number},
+    approvalStatus:{type: String, default:'pending'}
 });
 
 module.exports = mongoose.model('Item', itemSchema);
