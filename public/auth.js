@@ -1,115 +1,109 @@
-// --- REGISTRATION LOGIC ---
-const registerForm = document.getElementById('registerForm');
+    // --- REGISTRATION LOGIC ---
+    const registerForm = document.getElementById('registerForm');
 
-if (registerForm){
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    if (registerForm){
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const fullName = document.getElementById('fullName').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const errorMessage = document.getElementById('errorMessage');
-       
-        // 1. Check kung magkapareho ang password
-        if (password !== confirmPassword){
-            errorMessage.textContent = 'Passwords do not match';
-            errorMessage.classList.remove('hidden');
-            return;
-        }
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMessage = document.getElementById('errorMessage');
+        
+            // 1. Check kung magkapareho ang password
+            if (password !== confirmPassword){
+                errorMessage.textContent = 'Passwords do not match';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
 
-        // 2. Client-Side Validation: Checking kung @university.edu.ph ang email domain (Inakyat natin dito!)
-        if (!email.endsWith('@university.edu.ph')) {
-            errorMessage.textContent = "Please use your official university email (@university.edu.ph).";
-            errorMessage.classList.remove('hidden');
-            return;
-        }
+            // 2. Client-Side Validation: Checking kung @university.edu.ph ang email domain (Inakyat natin dito!)
+            if (!email.endsWith('@university.edu.ph')) {
+                errorMessage.textContent = "Please use your official university email (@university.edu.ph).";
+                errorMessage.classList.remove('hidden');
+                return;
+            }
 
-        errorMessage.classList.add('hidden');
-         
-        try {
-            const response = await fetch('http://localhost:3000/api/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ fullName, email, password })
-            });
+            errorMessage.classList.add('hidden');
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fullName, email, password })
+                });
 
-            const data = await response.json();
-            const successMessage = document.getElementById('successMessage');
+                const data = await response.json();
+                const successMessage = document.getElementById('successMessage');
 
-            if (response.ok) {
-                // Kapag successful ang pag-save sa database
-                errorMessage.classList.add('hidden');
-                successMessage.textContent = "Account successfully created!";
-                successMessage.classList.remove('hidden');
-                
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
-                
-            } else {
-                // Kapag may error galing sa backend (hal. ginamit na ang email)
-                errorMessage.textContent = data.message;
+                if (response.ok) {
+                    // Kapag successful ang pag-save sa database
+                    errorMessage.classList.add('hidden');
+                    successMessage.textContent = "Account successfully created!";
+                    successMessage.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                    
+                } else {
+                    // Kapag may error galing sa backend (hal. ginamit na ang email)
+                    errorMessage.textContent = data.message;
+                    errorMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                // Kapag nakapatay ang Node.js server mo
+                console.error("Connection Error:", error);
+                errorMessage.textContent = "Cannot connect to server. Please try again.";
                 errorMessage.classList.remove('hidden');
             }
-        } catch (error) {
-            // Kapag nakapatay ang Node.js server mo
-            console.error("Connection Error:", error);
-            errorMessage.textContent = "Cannot connect to server. Please try again.";
-            errorMessage.classList.remove('hidden');
-        }
-    });
-}
+        });
+    }
 
-// --- LOGIN LOGIC ---
-const loginForm = document.getElementById('loginForm');
+    // --- LOGIN LOGIC ---
+    const loginForm = document.getElementById('loginForm');
 
-if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Pinipigilan ang pag-refresh ng page
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Pinipigilan ang pag-refresh ng page
 
-        // Kinukuha ang tinype na email at password
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const loginErrorMessage = document.getElementById('loginErrorMessage');
+            // Kinukuha ang tinype na email at password
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginErrorMessage = document.getElementById('loginErrorMessage');
 
-        try {
-            // Ipinapadala sa backend ang data para i-verify sa database
-            const response = await fetch('http://localhost:3000/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
+            try {
+                // Ipinapadala sa backend ang data para i-verify sa database
+                const response = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (response.ok) {
-                // Kapag tama ang email at password
+                if (response.ok) {
                 loginErrorMessage.classList.add('hidden');
                 
-                // I-save ang user details sa browser para malaman ng system na naka-login siya
                 localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('token', data.token); 
 
-                // Titingnan kung sino ang nag-login para i-redirect sa tamang page
                 if (data.user.role === 'admin') {
-                    window.location.href = 'admin.html'; // Pupunta sa Admin Panel
+                    window.location.href = 'admin.html';
                 } else {
-                    window.location.href = 'feed.html'; // Pupunta sa Student Dashboard
+                    window.location.href = 'feed.html';
                 }
-            } else {
-                // Kapag mali ang password o email, ipapakita ang error
-                loginErrorMessage.textContent = data.message;
+            }
+            } catch (error) {
+                // Kapag nakapatay ang Node.js server
+                console.error("Login Connection Error:", error);
+                loginErrorMessage.textContent = "Cannot connect to server. Please try again.";
                 loginErrorMessage.classList.remove('hidden');
             }
-        } catch (error) {
-            // Kapag nakapatay ang Node.js server
-            console.error("Login Connection Error:", error);
-            loginErrorMessage.textContent = "Cannot connect to server. Please try again.";
-            loginErrorMessage.classList.remove('hidden');
-        }
-    });
-}
+        });
+    }

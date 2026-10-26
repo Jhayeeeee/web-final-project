@@ -1,29 +1,31 @@
     const logoutBtn = document.getElementById("logoutBtn");
+    const logoutBtnMobile = document.getElementById("logoutBtnMobile");
 
     // Kunin ang user data mula sa localStorage
     const storedUser = JSON.parse(localStorage.getItem('user'));
 
-    // I-update ang pangalan sa Navbar
+    // I-update ang pangalan sa Navbar (Desktop at Mobile)
     const navUserName = document.getElementById('navUserName');
-    if (navUserName && storedUser && storedUser.fullName) {
-        navUserName.textContent = storedUser.fullName;
+    const mobileNavUserName = document.getElementById('mobileNavUserName');
+    if (storedUser && storedUser.fullName) {
+        if (navUserName) navUserName.textContent = storedUser.fullName;
+        if (mobileNavUserName) mobileNavUserName.textContent = storedUser.fullName;
         
         // Para mapalitan din yung letrang "U" sa bilog ng unang letra ng pangalan nila
-        const userInitialCircle = document.querySelector('.rounded-full.bg-neutral-700');
-        if (userInitialCircle) {
-            userInitialCircle.textContent = storedUser.fullName.charAt(0).toUpperCase();
-        }
-    }
-
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-
-            localStorage.removeItem('user');
-
-            window.location.href = 'index.html';
-
+        const userInitialCircles = document.querySelectorAll('.user-initial-circle, .rounded-full.bg-neutral-700');
+        userInitialCircles.forEach(circle => {
+            circle.textContent = storedUser.fullName.charAt(0).toUpperCase();
         });
     }
+
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
+    };
+
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+    if (logoutBtnMobile) logoutBtnMobile.addEventListener('click', handleLogout);
 
     const gridButtons = document.querySelectorAll('#itemsGrid button');
 
@@ -37,21 +39,33 @@
         });
     });
 
+    // --- MOBILE MENU LOGIC ---
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileNavMenu = document.getElementById('mobileNavMenu');
+    if (mobileMenuBtn && mobileNavMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileNavMenu.classList.toggle('hidden');
+        });
+    }
+
     // --- MODAL LOGIC ---
     const openReportBtn = document.getElementById('openReportBtn');
+    const openReportBtnMobile = document.getElementById('openReportBtnMobile');
     const closeReportBtn = document.getElementById('closeReportBtn');
     const reportModal = document.getElementById('reportModal');
     const reportForm = document.getElementById('reportForm');
     const reportMessage = document.getElementById('reportMessage');
 
+    const handleOpenReport = (e) => {
+        if (e) e.preventDefault();
+        reportModal.classList.remove('hidden');
+        if (mobileNavMenu && !mobileNavMenu.classList.contains('hidden')) {
+            mobileNavMenu.classList.add('hidden');
+        }
+    };
 
-    // Palitawin ang modal
-    if (openReportBtn) {
-        openReportBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            reportModal.classList.remove('hidden');
-        });
-    }
+    if (openReportBtn) openReportBtn.addEventListener('click', handleOpenReport);
+    if (openReportBtnMobile) openReportBtnMobile.addEventListener('click', handleOpenReport);
 
     // Itago ang modal
     if (closeReportBtn) {
@@ -173,7 +187,7 @@ if (reportForm) {
             badgeText = 'AT ADMIN';
             buttonText = 'Claim at Admin';
         } else if (item.status === 'claimed') {
-            badgeStyle = 'bg-neutral-600 text-white';
+            badgeStyle = 'bg-green-500 text-white';
             badgeText = 'CLAIMED';
             buttonText = 'View Record';
         }
@@ -184,17 +198,17 @@ if (reportForm) {
                 : `<p class="text-neutral-400 text-sm">[ No Image Yet ]</p>`;
 
             const cardHTML = `
-                <div class="bg-white rounded-lg overflow-hidden border border-neutral-200 hover:border-neutral-400 transition flex flex-col">
-                    <div class="h-48 bg-neutral-700 flex items-center justify-center relative overflow-hidden">
-                        <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-xs font-bold px-2 py-1 rounded tracking-wide">${item.status.toUpperCase()}</span>
+                <div class="bg-white rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-400 transition flex flex-col shadow-sm">
+                    <div class="h-44 sm:h-48 bg-neutral-700 flex items-center justify-center relative overflow-hidden">
+                        <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-[10px] sm:text-xs font-bold px-2 py-1 rounded tracking-wide">${item.status.toUpperCase()}</span>
                         ${imageContent}
                     </div>
-                    <div class="p-5 flex-grow flex flex-col">
-                        <h3 class="text-base font-bold text-neutral-900 mb-2">${item.itemName}</h3>
-                        <p class="text-sm text-neutral-500 mb-1">Date: ${item.incidentDate || 'No date specified'}</p>
-                        <p class="text-sm text-neutral-500 mb-5 line-clamp-2">Location: ${item.location}</p>
+                    <div class="p-4 sm:p-5 flex-grow flex flex-col">
+                        <h3 class="text-sm sm:text-base font-bold text-neutral-900 mb-1.5 truncate" title="${item.itemName}">${item.itemName}</h3>
+                        <p class="text-xs sm:text-sm text-neutral-500 mb-1">Date: ${item.incidentDate || 'No date specified'}</p>
+                        <p class="text-xs sm:text-sm text-neutral-500 mb-4 line-clamp-2">Location: ${item.location}</p>
                         
-                        <button onclick="openItemDetails('${item._id}')" class="mt-auto w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                        <button onclick="openItemDetails('${item._id}')" class="mt-auto w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
                             ${buttonText}
                         </button>
                     </div>

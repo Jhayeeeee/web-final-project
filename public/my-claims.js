@@ -213,8 +213,12 @@ confirmDeleteBtn.addEventListener('click', async () => {
     confirmDeleteBtn.disabled = true;
 
     try {
+        const token = localStorage.getItem('token'); // 🟢 Kukunin ang naka-save na token
         const response = await fetch(`http://localhost:3000/api/items/${itemToDeleteId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}` // 🟢 Ipapasa ang token sa backend
+            }
         });
 
         if (response.ok) {
@@ -270,9 +274,14 @@ function markMyItemResolved(itemId) {
         if (!confirmed) return;
 
         try {
+            const token = localStorage.getItem('token'); // 🟢 Kukunin ang naka-save na token
+
             const response = await fetch(`http://localhost:3000/api/items/${itemId}/status`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // 🟢 Ipapasa ang token sa backend
+                },
                 body: JSON.stringify({ status: 'claimed' })
             });
 

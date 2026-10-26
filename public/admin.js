@@ -73,16 +73,16 @@ function renderFilters() {
     const filters = [
         { id: 'all', label: 'All Items', dot: '', countBg: 'bg-black text-white' },
         { id: 'lost', label: 'Lost', dot: 'bg-red-500', countBg: 'bg-neutral-200 text-neutral-700' },
-        { id: 'found', label: 'Found', dot: 'bg-green-500', countBg: 'bg-neutral-200 text-neutral-700' },
+        { id: 'found', label: 'Found', dot: 'bg-blue-500', countBg: 'bg-neutral-200 text-neutral-700' },
         { id: 'surrendered', label: 'At Admin', dot: 'bg-orange-500', countBg: 'bg-neutral-200 text-neutral-700' },
-        { id: 'claimed', label: 'Claimed', dot: 'bg-neutral-500', countBg: 'bg-neutral-200 text-neutral-700' }
+        { id: 'claimed', label: 'Claimed', dot: 'bg-green-500', countBg: 'bg-neutral-200 text-neutral-700' }
     ];
 
     filterContainer.innerHTML = filters.map(f => `
-        <button onclick="setFilter('${f.id}')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition ${currentFilter === f.id ? 'bg-neutral-100 border border-neutral-200 shadow-sm' : 'text-neutral-600 hover:bg-neutral-50'}">
+        <button onclick="setFilter('${f.id}')" class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition shrink-0 ${currentFilter === f.id ? 'bg-neutral-100 border border-neutral-200 shadow-sm' : 'text-neutral-600 hover:bg-neutral-50'}">
             ${f.dot ? `<span class="w-2 h-2 rounded-full ${f.dot}"></span>` : ''}
             ${f.label} 
-            <span class="px-2 py-0.5 rounded text-xs ${currentFilter === f.id ? 'bg-neutral-200 text-neutral-800' : f.countBg}">${counts[f.id]}</span>
+            <span class="px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs ${currentFilter === f.id ? 'bg-neutral-200 text-neutral-800' : f.countBg}">${counts[f.id]}</span>
         </button>
     `).join('');
 }
@@ -141,6 +141,7 @@ function displayAdminItems(items) {
             badgeStyle = 'bg-orange-500 text-white';
             claimButtonHTML = `<button onclick="markAsClaimed('${item._id}')" class="flex-grow py-2 bg-black hover:bg-gray-800 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1">✓ Mark claimed</button>`;
         } else if (item.status === 'claimed') {
+            badgeStyle = 'bg-green-600 text-white';
             claimButtonHTML = `<button disabled class="flex-grow py-2 bg-neutral-200 text-neutral-500 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Already Claimed</button>`;
         }
 
@@ -168,9 +169,9 @@ function displayAdminItems(items) {
                     ${imageContent}
                 </div>
                 <div class="p-4 flex-grow flex flex-col">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-md font-bold text-gray-900">${item.itemName}</h3>
-                        <span class="text-xs text-gray-400">#${displayId}</span>
+                    <div class="flex justify-between items-start mb-4 gap-2">
+                        <h3 class="text-sm sm:text-base font-bold text-gray-900 truncate" title="${item.itemName}">${item.itemName}</h3>
+                        <span class="text-xs text-gray-400 shrink-0">#${displayId}</span>
                     </div>
                     
                     <div class="space-y-2 mb-6">
@@ -233,15 +234,25 @@ function showCustomModal(title, message, isConfirm = false, callback = null) {
 
 function markAsClaimed(itemId) {
     showCustomModal("Mark as Claimed", "Are you sure you want to mark this item as CLAIMED?", true, async (confirmed) => {
-        if (!confirmed) return; // Kapag pinindot ang Cancel, titigil dito
+        if (!confirmed) return;
         
         try {
+            const token = localStorage.getItem('token'); // 🟢 Kukunin ang token
+
             const response = await fetch(`http://localhost:3000/api/items/${itemId}/status`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // 🟢 Ipapasa ang token sa server
+                },
                 body: JSON.stringify({ status: 'claimed' })
             });
-            if (response.ok) loadAdminInventory();
+
+            if (response.ok) {
+                loadAdminInventory();
+            } else {
+                showCustomModal("Error", "Session expired or access denied. Please login again.", false);
+            }
         } catch (error) { 
             console.error('Error:', error); 
         }
@@ -250,11 +261,23 @@ function markAsClaimed(itemId) {
 
 function deleteAdminItem(itemId) {
     showCustomModal("Delete Post", "Are you sure you want to permanently delete this post?", true, async (confirmed) => {
-        if (!confirmed) return; // Kapag pinindot ang Cancel, titigil dito
+        if (!confirmed) return; 
         
         try {
-            const response = await fetch(`http://localhost:3000/api/items/${itemId}`, { method: 'DELETE' });
-            if (response.ok) loadAdminInventory();
+            const token = localStorage.getItem('token'); // 🟢 Kukunin ang token
+
+            const response = await fetch(`http://localhost:3000/api/items/${itemId}`, { 
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}` // 🟢 Ipapasa ang token sa server
+                }
+            });
+
+            if (response.ok) {
+                loadAdminInventory();
+            } else {
+                showCustomModal("Error", "Session expired or access denied. Please login again.", false);
+            }
         } catch (error) { 
             console.error('Error:', error); 
         }

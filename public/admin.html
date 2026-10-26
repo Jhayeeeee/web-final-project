@@ -8,69 +8,68 @@
 </head>
 <body class="bg-neutral-100 min-h-screen font-sans">
 
-    <nav class="bg-[#1a1a1a] text-white py-3 px-6 shadow-md flex justify-between items-center">
-    <div class="flex items-center gap-3">
-        <h1 class="text-lg font-bold tracking-wide">University Lost & Found Panel</h1>
-    </div>
-    <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2">
-            <span id="adminInitials" class="bg-neutral-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold uppercase">AD</span>
-            <span id="adminNameDisplay" class="text-sm">Admin Account</span>
+    <nav class="bg-[#1a1a1a] text-white py-3 px-4 sm:px-6 shadow-md flex justify-between items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+            <h1 class="text-sm sm:text-lg font-bold tracking-wide truncate">University Lost & Found Panel</h1>
         </div>
-        <button id="logoutBtn" class="border border-neutral-600 px-4 py-1.5 rounded hover:bg-neutral-800 text-sm transition">Logout</button>
-    </div>
-</nav>
+        <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+            <div class="flex items-center gap-2">
+                <span id="adminInitials" class="bg-neutral-600 text-white w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xs font-bold uppercase shrink-0">AD</span>
+                <span id="adminNameDisplay" class="text-xs sm:text-sm hidden sm:inline max-w-[140px] truncate">Admin Account</span>
+            </div>
+            <button id="logoutBtn" class="border border-neutral-600 px-3 sm:px-4 py-1.5 rounded hover:bg-neutral-800 text-xs sm:text-sm transition shrink-0">Logout</button>
+        </div>
+    </nav>
 
-<main class="max-w-7xl mx-auto p-6 mt-2">
-    <div class="mb-6">
-        <h2 class="text-3xl font-extrabold text-gray-900">Surrendered Items Inventory</h2>
-        <p class="text-gray-500 text-sm mt-1">Physical items currently at the Admin Office awaiting claim.</p>
-    </div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div class="mb-6">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900">Surrendered Items Inventory</h2>
+            <p class="text-gray-500 text-xs sm:text-sm mt-1">Physical items currently at the Admin Office awaiting claim.</p>
+        </div>
 
-    <!-- Stats Row -->
-    <div class="flex gap-4 mb-8">
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 w-48">
-            <p class="text-xs font-bold text-gray-400 tracking-wider mb-1">TOTAL ITEMS</p>
-            <p id="statTotal" class="text-2xl font-bold">0</p>
+        <!-- Stats Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div class="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-neutral-200">
+                <p class="text-[10px] sm:text-xs font-bold text-gray-400 tracking-wider mb-1">TOTAL ITEMS</p>
+                <p id="statTotal" class="text-2xl sm:text-3xl font-bold text-gray-900">0</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-neutral-200">
+                <p class="text-[10px] sm:text-xs font-bold text-gray-400 tracking-wider mb-1">AT ADMIN OFFICE</p>
+                <p id="statAdmin" class="text-2xl sm:text-3xl font-bold text-orange-600">0</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-neutral-200">
+                <p class="text-[10px] sm:text-xs font-bold text-gray-400 tracking-wider mb-1">CLAIMED</p>
+                <p id="statClaimed" class="text-2xl sm:text-3xl font-bold text-green-600">0</p>
+            </div>
         </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 w-48">
-            <p class="text-xs font-bold text-gray-400 tracking-wider mb-1">AT ADMIN OFFICE</p>
-            <p id="statAdmin" class="text-2xl font-bold">0</p>
-        </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 w-48">
-            <p class="text-xs font-bold text-gray-400 tracking-wider mb-1">CLAIMED</p>
-            <p id="statClaimed" class="text-2xl font-bold">0</p>
-        </div>
-    </div>
 
-    <!-- Filter & Search Bar -->
-    <div class="bg-white rounded-xl p-2 shadow-sm border border-neutral-200 mb-8 flex justify-between items-center flex-wrap gap-4">
-        <div class="flex gap-1" id="filterContainer">
-            <!-- Buttons injected by JS -->
+        <!-- Filter & Search Bar -->
+        <div class="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-neutral-200 mb-6 sm:mb-8 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3 sm:gap-4">
+            <div class="flex flex-wrap gap-1.5 sm:gap-2" id="filterContainer">
+                <!-- Buttons injected by JS -->
+            </div>
+            <div class="relative w-full md:w-auto md:min-w-[280px] lg:min-w-[340px]">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" id="adminSearch" placeholder="Search item, email, or location" class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-800">
+            </div>
         </div>
-        <div class="relative flex-grow max-w-md">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </span>
-            <input type="text" id="adminSearch" placeholder="Search item, email, or location" class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-800">
-        </div>
-    </div>
 
-    <div id="adminInventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-12">
-        <p class="text-neutral-500">Loading inventory...</p>
-    </div>
-    
-    <div id="customModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl">
-        <h3 id="customModalTitle" class="text-lg font-bold text-gray-900 mb-2">Notification</h3>
-        <p id="customModalMessage" class="text-sm text-gray-600 mb-6">Message goes here.</p>
-        <div class="flex justify-end gap-3">
-            <button id="customModalCancel" class="hidden px-4 py-2 bg-gray-100 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-200 transition">Cancel</button>
-            <button id="customModalConfirm" class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition">OK</button>
+        <div id="adminInventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 pb-12">
+            <p class="text-neutral-500 col-span-full">Loading inventory...</p>
         </div>
-    </div>
-</div>
-</main>
+        
+        <div id="customModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div class="bg-white rounded-xl p-5 sm:p-6 max-w-sm w-full mx-auto shadow-xl">
+                <h3 id="customModalTitle" class="text-lg font-bold text-gray-900 mb-2">Notification</h3>
+                <p id="customModalMessage" class="text-sm text-gray-600 mb-6">Message goes here.</p>
+                <div class="flex justify-end gap-3">
+                    <button id="customModalCancel" class="hidden px-4 py-2 bg-gray-100 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-200 transition">Cancel</button>
+                    <button id="customModalConfirm" class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition">OK</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script src="admin.js"></script>
