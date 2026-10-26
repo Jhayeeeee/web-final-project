@@ -26,6 +26,9 @@ if (logoutBtn) {
     });
 }
 
+
+
+
 // --- LOAD USER'S ITEMS ---
 async function loadMyItems() {
     try {
@@ -69,16 +72,17 @@ function displayMyItems(itemsToDisplay) {
 
    itemsToDisplay.forEach(item => {
         let badgeStyle = item.status === 'found' ? 'bg-green-600 text-white' : 'bg-red-600 text-white';
-        // Idagdag ang kulay orange na badge kung surrendered na
         if (item.status === 'surrendered') badgeStyle = 'bg-orange-500 text-white';
+        if (item.status === 'claimed') badgeStyle = 'bg-neutral-600 text-white';
         
-        const imageContent = item.imageUrl 
-            ? `<img src="${item.imageUrl}" alt="${item.itemName}" class="w-full h-full object-cover">` 
+        const imageContent = item.imageURL 
+            ? `<img src="${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">` 
             : `<p class="text-neutral-400 text-sm">[ No Image Yet ]</p>`;
 
-        // Setup ng buttons depende sa status
+        // Base Delete Button
         let actionButtons = `<button onclick="deleteMyItem('${item._id}')" class="mt-2 w-full py-2 bg-red-100 hover:bg-red-200 border border-red-300 text-red-700 text-sm font-bold rounded-md transition focus:outline-none"> Delete Post</button>`;
 
+        // Status Conditions
         if (item.status === 'found') {
             actionButtons = `
                 <button onclick="updateItemStatus('${item._id}', 'surrendered')" class="mt-auto w-full py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-md transition mb-1"> Surrendered to Admin</button>
@@ -89,8 +93,16 @@ function displayMyItems(itemsToDisplay) {
                 <button disabled class="mt-auto w-full py-2 bg-neutral-300 text-neutral-600 text-sm font-bold rounded-md mb-1 cursor-not-allowed">At Admin Office</button>
                 ${actionButtons}
             `;
-        } else {
-            actionButtons = `<div class="mt-auto">${actionButtons}</div>`;
+        } else if (item.status === 'lost') {
+            actionButtons = `
+                <button onclick="markMyItemResolved('${item._id}')" class="mt-auto w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-md transition mb-1"> I Found It (Close Post)</button>
+                ${actionButtons}
+            `;
+        } else if (item.status === 'claimed') {
+            actionButtons = `
+                <button disabled class="mt-auto w-full py-2 bg-green-100 text-green-700 border border-green-200 text-sm font-bold rounded-md mb-1 cursor-not-allowed"> Resolved</button>
+                ${actionButtons}
+            `;
         }
 
         const cardHTML = `
@@ -104,7 +116,9 @@ function displayMyItems(itemsToDisplay) {
                     <p class="text-sm text-neutral-500 mb-1">Date: ${item.incidentDate || 'No date specified'}</p>
                     <p class="text-sm text-neutral-500 mb-5 line-clamp-2">Location: ${item.location}</p>
                     
-                    ${actionButtons}
+                    <div class="mt-auto flex flex-col">
+                        ${actionButtons}
+                    </div>
                 </div>
             </div>
         `;
@@ -219,3 +233,58 @@ confirmDeleteBtn.addEventListener('click', async () => {
         itemToDeleteId = null;
     }
 });
+
+
+function showCustomModal(title, message, isConfirm = false, callback = null) {
+    const modal = document.getElementById('customModal');
+    if (!modal) return console.error("Modal HTML is missing!");
+    
+    document.getElementById('customModalTitle').textContent = title;
+    document.getElementById('customModalMessage').textContent = message;
+    
+    const cancelBtn = document.getElementById('customModalCancel');
+    const confirmBtn = document.getElementById('customModalConfirm');
+    
+    cancelBtn.classList.toggle('hidden', !isConfirm);
+    modal.classList.remove('hidden');
+    
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    newConfirmBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        if (callback) callback(true);
+    });
+    
+    newCancelBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        if (callback) callback(false);
+    });
+}
+
+// --- MARK OWN LOST ITEM AS RESOLVED ---
+function markMyItemResolved(itemId) {
+    showCustomModal("Found Your Item?", "Did you find your item? This will close the post and mark it as resolved.", true, async (confirmed) => {
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/items/${itemId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'claimed' })
+            });
+
+            if (response.ok) {
+                loadMyItems(); 
+            } else {
+                showCustomModal("Error", "Failed to update post status.", false);
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+            showCustomModal("Error", "Cannot connect to server.", false);
+        }
+    });
+}
+
