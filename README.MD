@@ -54,7 +54,7 @@ When designing this application, I opted for a lightweight yet robust full-stack
 Here is an explanation of the key modules I developed and how they work under the hood:
 
 ### 1. User Authentication & Campus Security
-- **Domain Restriction**: In `server.js`, I added validation to ensure only official university emails (e.g., ending with `@university.edu.ph` / `@plm.edu.ph`) can register. This keeps the portal exclusive and accountable to campus students.
+- **Domain Restriction**: In `server.js`, I added validation to ensure only official university emails (e.g., ending with `@university.edu.ph`) can register. This keeps the portal exclusive and accountable to campus students.
 - **Password Security**: Passwords are never saved in plain text. I used `bcrypt` with a salt factor of 10 to hash passwords during registration and verify them during login.
 - **Role-Based Access**: Each user has a `role` (`student` or `admin`). Regular students can report items and browse the feed, while users with the `admin` role get access to the administrative inventory management dashboard.
 

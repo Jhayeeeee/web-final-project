@@ -134,7 +134,7 @@
 
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Location</label>
-                        <button type="button" id="getLocationBtn" class="mb-1.5 w-full py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold rounded flex justify-center items-center gap-1 transition">
+                        <button type="button" id="getLocationBtn" required class="mb-1.5 w-full py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold rounded flex justify-center items-center gap-1 transition">
                             📍 Auto-Detect Exact Location
                         </button>
                         <p id="geoStatus" class="text-[10px] text-neutral-500 mb-1.5 text-center hidden"></p>
@@ -146,6 +146,7 @@
                                 <option value="Gusaling Villegas">GV</option>
                                 <option value="University Library">Library</option>
                                 <option value="Campus Grounds">Grounds</option>
+                                <option value="Other">Other (Please specify in the description)</option>
                             </select>
                             <select id="campusRoom" disabled class="w-full px-2 py-1.5 bg-neutral-100 border border-neutral-300 rounded text-neutral-700 text-xs focus:outline-none disabled:opacity-50">
                                 <option value="">Area/Room</option>

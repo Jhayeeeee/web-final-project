@@ -73,13 +73,43 @@
             reportModal.classList.add('hidden');
             reportForm.reset();
             reportMessage.classList.add('hidden');
+            
+            // --- BAGONG DAGDAG: I-reset ang Location UI at Inputs ---
+            const resetGeoStatus = document.getElementById('geoStatus');
+            if (resetGeoStatus) {
+                resetGeoStatus.textContent = '';
+                resetGeoStatus.classList.add('hidden'); // Itatago ulit ang text
+            }
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
+            
+            // Ibalik sa itim ang button kung naging green ito
+            const locBtn = document.getElementById('getLocationBtn');
+            if (locBtn && locBtn.classList.contains('bg-green-700')) {
+                locBtn.classList.replace('bg-green-700', 'bg-neutral-800');
+            }
         });
     }
-
    // --- SUBMIT ITEM LOGIC ---
 if (reportForm) {
     reportForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+   // --- NATIVE BROWSER TOOLTIP VALIDATION ---
+        const latValue = document.getElementById('latitude').value;
+        const buildingSelect = document.getElementById('campusBuilding');
+
+        // Kung walang GPS at walang napiling building
+        if (!latValue && buildingSelect.value === "") {
+            // Maglalabas ng native tooltip na parang naka-HTML 'required'
+            buildingSelect.setCustomValidity("Please choose a building. If it's not among the choices, select 'other'");
+            buildingSelect.reportValidity(); // Ipakita ang tooltip sa screen
+            return; // Pigilan ang pag-save
+        } else {
+            // I-clear ang error kung may laman na para makapag-submit
+            buildingSelect.setCustomValidity("");
+        }
+        // ------------------------------------------
 
         const storedUser = JSON.parse(localStorage.getItem('user'));
         if (!storedUser || !storedUser.id) {
@@ -420,3 +450,4 @@ if (closeAdminInfoBtn) {
         document.getElementById('adminInfoModal').classList.add('hidden');
     });
 }
+
