@@ -313,8 +313,13 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
 
             const reportedBy = item.reportedBy?.email || item.reportedBy?.name || (typeof item.reportedBy === 'string' ? item.reportedBy : 'N/A');
 
+           let locationData = item.location || 'N/A';
+           if(item.latitude && item.longitude) {
+           locationData = `=HYPERLINK(""https://www.google.com/maps?q=${item.latitude},${item.longitude}"", ""View Map"")`;
+            }
+
             // 🟢 Pinalitan ang ${item._id} ng ${customId}
-            const row = `"${customId}","${itemName}","${category}","${item.status}","${reportedBy}","${date}","${item.location}"`;
+            const row = `"${customId}","${itemName}","${category}","${item.status}","${reportedBy}","${date}","${locationData}"`;
             csvContent += row + "\n";
         });
 
