@@ -27,8 +27,6 @@ if (logoutBtn) {
 }
 
 
-
-
 // --- LOAD USER'S ITEMS ---
 async function loadMyItems() {
     try {

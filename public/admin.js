@@ -283,3 +283,55 @@ function deleteAdminItem(itemId) {
         }
     });
 }
+
+document.getElementById('exportReportBtn').addEventListener('click', async () => {
+    try {
+        const token = localStorage.getItem('token');
+        
+        // 🟢 Kunin ang lahat ng items mula sa backend
+        const response = await fetch('http://localhost:3000/api/items', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) throw new Error("Failed to fetch data");
+        const items = await response.json();
+
+        // 🟢 I-setup ang headers ng Excel/CSV
+        let csvContent = "Item ID,Item Name,Category,Status,Reported By,Date,Location\n";
+
+        // 🟢 Idinagdag ang 'index' para mabilang kung pang-ilan ang item
+        items.forEach((item, index) => {
+            
+            // 🟢 Gumawa ng format na ITEM001, ITEM002, etc. (String at padStart)
+            const customId = "ITEM" + String(index + 1).padStart(3, '0');
+
+            const rawDate = item.createdAt || item.date || item.dateReported;
+            const date = rawDate ? new Date(rawDate).toLocaleDateString() : 'N/A';
+
+            const itemName = item.name || item.itemName || item.title || 'N/A';
+            const category = item.category || item.type || 'N/A';
+
+            const reportedBy = item.reportedBy?.email || item.reportedBy?.name || (typeof item.reportedBy === 'string' ? item.reportedBy : 'N/A');
+
+            // 🟢 Pinalitan ang ${item._id} ng ${customId}
+            const row = `"${customId}","${itemName}","${category}","${item.status}","${reportedBy}","${date}","${item.location}"`;
+            csvContent += row + "\n";
+        });
+
+        // 🟢 I-convert ang text papuntang mada-download na file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Lost_and_Found_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+    } catch (error) {
+        console.error('Export error:', error);
+        alert("Hindi ma-generate ang report. Pakisuri ang koneksyon sa server.");
+    }
+});

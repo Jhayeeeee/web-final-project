@@ -40,9 +40,10 @@
             <div class="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-neutral-200">
                 <p class="text-[10px] sm:text-xs font-bold text-gray-400 tracking-wider mb-1">CLAIMED</p>
                 <p id="statClaimed" class="text-2xl sm:text-3xl font-bold text-green-600">0</p>
-            </div>
+            </div>  
+            
         </div>
-
+                
         <!-- Filter & Search Bar -->
         <div class="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-neutral-200 mb-6 sm:mb-8 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3 sm:gap-4">
             <div class="flex flex-wrap gap-1.5 sm:gap-2" id="filterContainer">
@@ -54,7 +55,11 @@
                 </span>
                 <input type="text" id="adminSearch" placeholder="Search item, email, or location" class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-800">
             </div>
+            <button id="exportReportBtn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow">
+                Export Report (CSV)
+            </button>
         </div>
+        
 
         <div id="adminInventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 pb-12">
             <p class="text-neutral-500 col-span-full">Loading inventory...</p>
@@ -70,6 +75,7 @@
                 </div>
             </div>
         </div>
+
     </main>
 
     <script src="admin.js"></script>
