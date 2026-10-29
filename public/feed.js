@@ -202,23 +202,27 @@ if (reportForm) {
             return;
         }
 
-        itemsToDisplay.forEach(item => {
-    
-          // Design badge and button text based on status
-        let badgeStyle = 'bg-red-600 text-white'; // Default para sa 'lost'
-        let badgeText = item.status.toUpperCase();
-        let buttonText = 'View Details';
+       itemsToDisplay.forEach(item => {
+            // Design badge and button text based on status
+            let badgeStyle = 'bg-red-600 text-white'; // Default para sa 'lost'
+            let badgeText = item.status.toUpperCase();
+            let buttonText = 'View Details';
+            let buttonStyle = 'bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500'; // Default blue button
 
-        if (item.status === 'found') {
-            badgeStyle = 'bg-green-600 text-white';
-            buttonText = 'Claim Item';
-        } else if (item.status === 'surrendered') {
-            badgeStyle = 'bg-orange-500 text-white';
-            badgeText = 'AT ADMIN';
-            buttonText = 'Claim at Admin';
-        } else if (item.status === 'claimed') return;
+            if (item.status === 'found') {
+                badgeStyle = 'bg-green-600 text-white';
+                buttonText = 'Claim Item';
+                buttonStyle = 'bg-green-600 hover:bg-green-700 focus-visible:ring-green-500'; // Berde kapag found
+            } else if (item.status === 'surrendered') {
+                badgeStyle = 'bg-orange-500 text-white';
+                badgeText = 'AT ADMIN';
+                buttonText = 'Claim at Admin';
+                buttonStyle = 'bg-orange-500 hover:bg-orange-600 focus-visible:ring-orange-500'; // Orange kapag nasa admin
+            } else if (item.status === 'claimed') {
+                return;
+            }
 
-         // Image placeholder
+            // Image placeholder
             const imageContent = item.imageURL 
                 ? `<img src="${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">` 
                 : `<p class="text-neutral-400 text-sm">[ No Image Yet ]</p>`;
@@ -226,7 +230,8 @@ if (reportForm) {
             const cardHTML = `
                 <div class="bg-white rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-400 transition flex flex-col shadow-sm">
                     <div class="h-44 sm:h-48 bg-neutral-700 flex items-center justify-center relative overflow-hidden">
-                        <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-[10px] sm:text-xs font-bold px-2 py-1 rounded tracking-wide">${item.status.toUpperCase()}</span>
+                        <!-- Pinalitan ang ${item.status.toUpperCase()} ng ${badgeText} para gumana ang 'AT ADMIN' -->
+                        <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-[10px] sm:text-xs font-bold px-2 py-1 rounded tracking-wide">${badgeText}</span>
                         ${imageContent}
                     </div>
                     <div class="p-4 sm:p-5 flex-grow flex flex-col">
@@ -234,12 +239,13 @@ if (reportForm) {
                         <p class="text-xs sm:text-sm text-neutral-500 mb-1">Date: ${item.incidentDate || 'No date specified'}</p>
                         <p class="text-xs sm:text-sm text-neutral-500 mb-4 line-clamp-2">Location: ${item.location}</p>
                         
-                        <button onclick="openItemDetails('${item._id}')" class="mt-auto w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                        <!-- Ginamit ang ${buttonStyle} dito para mag-iba-iba ang kulay -->
+                        <button onclick="openItemDetails('${item._id}')" class="mt-auto w-full py-2 text-white text-xs sm:text-sm font-semibold rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${buttonStyle}">
                             ${buttonText}
                         </button>
                     </div>
                 </div>
-        `;
+            `;
             itemsGrid.innerHTML += cardHTML;
         });
     }
@@ -298,7 +304,16 @@ function openItemDetails(itemId) {
     document.getElementById('detailCategory').textContent = item.category;
     document.getElementById('detailDesc').textContent = item.description;
     document.getElementById('detailLocation').textContent = item.location;
-    document.getElementById('detailLocation').textContent = item.location;
+    document.getElementById('detailLocation').textContent = item.location;// Palitan ang mga itry;
+
+// Ito ay ang ID ng element sa HTML para sa pangalan ng nag-post
+const posterNameElement = document.getElementById('detailPosterName');
+if (item.reportedBy && item.reportedBy.fullName) {
+    posterNameElement.textContent = item.reportedBy.fullName;
+} else {
+    posterNameElement.textContent = 'Unknown User'; // Fallback text
+}
+    
     
     // --- GOOGLE MAPS LINK LOGIC ---
     const mapLink = document.getElementById('detailMapLink');

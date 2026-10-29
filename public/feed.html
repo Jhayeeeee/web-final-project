@@ -179,14 +179,17 @@
                 <div id="detailImageContainer" class="h-44 sm:h-48 bg-neutral-100 w-full rounded-lg mb-4 flex items-center justify-center overflow-hidden border border-neutral-200">
                     <!-- Image injected here -->
                 </div>
-
+                
                 <div class="flex justify-between items-start mb-2 gap-2">
                     <h2 id="detailName" class="text-xl sm:text-2xl font-bold text-neutral-900 break-words">Item Name</h2>
                     <span id="detailStatus" class="text-xs font-bold px-2 py-1 rounded tracking-wide shrink-0">STATUS</span>
                 </div>
                 
-                <p class="text-xs sm:text-sm text-neutral-500 mb-4">Category: <span id="detailCategory" class="font-medium text-neutral-700">Category</span></p>
-                
+               <!-- Palitan ang parteng ito sa loob ng iyong Item Details Modal -->
+                <div class="mb-3 flex flex-col gap-1">
+                    <p class="text-sm text-gray-500">Category: <span id="detailCategory" class="font-medium text-gray-800"></span></p>
+                    <p class="text-sm text-gray-500">Posted by: <span id="detailPosterName" class="font-medium text-gray-800"></span></p>
+                </div>
                 <div class="bg-neutral-50 p-3.5 sm:p-4 rounded-lg border border-neutral-200 mb-4">
                     <p class="text-xs sm:text-sm text-neutral-800 font-semibold mb-1">Description:</p>
                     <p id="detailDesc" class="text-xs sm:text-sm text-neutral-600 mb-3 break-words">Description here.</p>

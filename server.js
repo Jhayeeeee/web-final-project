@@ -158,10 +158,10 @@ app.post('/api/items', upload.single('image'), async (req, res) => {
     }
 });
 app.get('/api/items', async (req, res) => {
-    try {
+   try {
         const items = await Item.find().populate({
             path: 'reportedBy',
-            select: 'email',
+            select: 'fullName email', // Idinagdag ang fullName dito!
             strictPopulate: false
         });
         res.status(200).json(items);

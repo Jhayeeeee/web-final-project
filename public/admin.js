@@ -189,9 +189,9 @@ function displayAdminItems(items) {
                         </p>
                     </div>
 
-                    <!-- 3. Dito nakalagay ang mga buttons sa ibaba ng card -->
+                   <!-- 3. Dito nakalagay ang mga buttons sa ibaba ng card -->
                     <div class="mt-auto flex gap-2">
-                        ${claimButtonHTML}
+                   <button onclick="openDetailsModal('${item._id}')" class="px-3 py-2 bg-neutral-800 hover:bg-black text-white rounded-lg text-xs font-bold transition flex items-center justify-center">View</button>
                         ${deleteButtonHTML}
                     </div>
                 </div>
@@ -340,3 +340,38 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
         alert("Hindi ma-generate ang report. Pakisuri ang koneksyon sa server.");
     }
 });
+
+
+
+// Function para buksan ang View Details modal
+function openDetailsModal(itemId) {
+    const item = allSystemItems.find(i => i._id === itemId);
+    if (!item) return;
+
+    const detailsContent = document.getElementById('detailsModalContent');
+    const rawDate = item.createdAt || item.date || item.dateReported;
+    const dateFormatted = rawDate ? new Date(rawDate).toLocaleString() : 'N/A';
+
+    detailsContent.innerHTML = `
+        <div class="space-y-2">
+            ${item.imageURL ? `<img src="${item.imageURL}" class="w-full h-48 object-cover rounded-lg mb-3 border">` : ''}
+            <p><strong>Item Name:</strong> ${item.itemName || 'N/A'}</p>
+            <p><strong>Description:</strong> ${item.description || 'No description provided.'}</p>
+            <p><strong>Category:</strong> ${item.category || 'N/A'}</p>
+            <p><strong>Status:</strong> <span class="uppercase font-semibold px-2 py-0.5 bg-neutral-100 rounded text-xs">${item.status}</span></p>
+            <p><strong>Approval Status:</strong> <span class="uppercase font-semibold px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs">${item.approvalStatus || 'pending'}</span></p>
+            <p><strong>Reported By:</strong> ${item.reportedBy?.email || item.reportedBy || 'Unknown'}</p>
+            <p><strong>Date Reported:</strong> ${dateFormatted}</p>
+            <p><strong>Incident Date:</strong> ${item.incidentDate || 'N/A'}</p>
+            <p><strong>Location:</strong> ${item.location || 'N/A'}</p>
+            ${item.latitude && item.longitude ? `<p><strong>Coordinates:</strong> ${item.latitude}, ${item.longitude}</p>` : ''}
+        </div>
+    `;
+
+    document.getElementById('detailsModal').classList.remove('hidden');
+}
+
+// Function para isara ang View Details modal
+function closeDetailsModal() {
+    document.getElementById('detailsModal').classList.add('hidden');
+}

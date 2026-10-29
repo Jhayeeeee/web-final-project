@@ -83,7 +83,8 @@ function displayMyItems(itemsToDisplay) {
         // Status Conditions
         if (item.status === 'found') {
             actionButtons = `
-                <button onclick="updateItemStatus('${item._id}', 'surrendered')" class="mt-auto w-full py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-md transition mb-1"> Surrendered to Admin</button>
+                <button onclick="updateItemStatus('${item._id}', 'returned')" class="mt-auto w-full py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded-md transition mb-1"> Already Returned</button>
+                <button onclick="updateItemStatus('${item._id}', 'surrendered')" class="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-md transition mb-1"> Surrendered to Admin</button>
                 ${actionButtons}
             `;
         } else if (item.status === 'surrendered') {
@@ -192,48 +193,70 @@ const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 let itemToDeleteId = null; // Dito natin ise-save pansamantala yung ID na buburahin
 
-// 1. Kapag pinindot ang Delete sa card, ipapakita ang Modal
-function deleteMyItem(itemId) {
-    itemToDeleteId = itemId;
-    deleteModal.classList.remove('hidden'); 
+// 1. Kapag pinindot ang green o orange button sa card
+function updateItemStatus(itemId, newStatus) {
+    itemToSurrenderId = itemId;
+    newStatusToSet = newStatus;
+
+    // Kunin ang mga text elements sa loob ng modal
+    const modalTitle = surrenderModal.querySelector('h2') || surrenderModal.querySelector('h3') || surrenderModal.querySelector('strong'); // Depende kung anong tag gamit mo sa title
+    const modalDesc = surrenderModal.querySelector('p');
+
+    // Baguhin ang itsura at text ng modal depende sa status
+    if (newStatus === 'returned') {
+        if (modalTitle) modalTitle.textContent = "Item Returned?";
+        if (modalDesc) modalDesc.textContent = "Are you sure this item has already been returned to its owner? This will update the public feed.";
+        confirmSurrenderBtn.textContent = "Yes, Returned";
+        confirmSurrenderBtn.style.backgroundColor = "#22c55e"; // Tailwind green-500
+    } else {
+        if (modalTitle) modalTitle.textContent = "Surrender Item?";
+        if (modalDesc) modalDesc.textContent = "Are you sure you have surrendered this item to the Admin/Security Guard? This will update the public feed.";
+        confirmSurrenderBtn.textContent = "Yes, Surrendered";
+        confirmSurrenderBtn.style.backgroundColor = "#f97316"; // Tailwind orange-500
+    }
+
+    surrenderModal.classList.remove('hidden');
 }
 
-// 2. Kapag pinindot ang "Cancel" sa Modal, itatago lang ito
-cancelDeleteBtn.addEventListener('click', () => {
-    deleteModal.classList.add('hidden');
-    itemToDeleteId = null;
+// 2. Kapag pinindot ang "Cancel"
+cancelSurrenderBtn.addEventListener('click', () => {
+    surrenderModal.classList.add('hidden');
+    itemToSurrenderId = null;
+    newStatusToSet = null;
 });
 
-// 3. Kapag pinindot ang "Yes, Delete" sa Modal, saka kokonekta sa server
-confirmDeleteBtn.addEventListener('click', async () => {
-    if (!itemToDeleteId) return;
+// 3. Kapag pinindot ang Confirm button (Konekta sa backend)
+confirmSurrenderBtn.addEventListener('click', async () => {
+    if (!itemToSurrenderId) return;
 
-    confirmDeleteBtn.textContent = "Deleting...";
-    confirmDeleteBtn.disabled = true;
+    confirmSurrenderBtn.textContent = "Updating...";
+    confirmSurrenderBtn.disabled = true;
 
     try {
-        const token = localStorage.getItem('token'); // 🟢 Kukunin ang naka-save na token
-        const response = await fetch(`http://localhost:3000/api/items/${itemToDeleteId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}` // 🟢 Ipapasa ang token sa backend
-            }
+        const token = localStorage.getItem('token'); 
+
+        const response = await fetch(`http://localhost:3000/api/items/${itemToSurrenderId}/status`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            // DITO ANG PAGBABAGO: Gamitin ang variable imbes na hardcoded na salita
+            body: JSON.stringify({ status: newStatusToSet }) 
         });
 
         if (response.ok) {
-            deleteModal.classList.add('hidden'); // Itago ang modal
-            loadMyItems(); // Kusa na lang mawawala yung item sa screen
+            surrenderModal.classList.add('hidden'); 
+            loadMyItems(); 
         } else {
-            alert("Failed to delete the post.");
+            alert("Failed to update post status.");
         }
     } catch (error) {
-        console.error('Error deleting item:', error);
+        console.error('Error updating status:', error);
         alert("Cannot connect to server.");
     } finally {
-        // Ibalik sa normal ang button text
-        confirmDeleteBtn.textContent = "Yes, Delete";
-        confirmDeleteBtn.disabled = false;
-        itemToDeleteId = null;
+        confirmSurrenderBtn.disabled = false;
+        itemToSurrenderId = null; 
     }
 });
 
