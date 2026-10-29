@@ -319,3 +319,57 @@ function markMyItemResolved(itemId) {
     });
 }
 
+// Function para sa pag-delete ng sariling post ng student
+function deleteMyItem(itemId) {
+    itemToDeleteId = itemId;
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        deleteModal.classList.remove('hidden');
+    }
+}
+
+// 2. I-wire up ang Delete Modal buttons kapag nag-load ang page
+document.addEventListener('DOMContentLoaded', () => {
+    const deleteModal = document.getElementById('deleteModal');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', () => {
+            itemToDeleteId = null;
+            if (deleteModal) deleteModal.classList.add('hidden');
+        });
+    }
+
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (!itemToDeleteId) return;
+
+            confirmDeleteBtn.textContent = "Deleting...";
+            confirmDeleteBtn.disabled = true;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`http://localhost:3000/api/items/${itemToDeleteId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    if (deleteModal) deleteModal.classList.add('hidden');
+                    itemToDeleteId = null;
+                    loadMyItems(); // I-refresh ang grid para mawala ang item
+                } else {
+                    const data = await response.json();
+                    showCustomModal("Error", "Failed to delete post: " + (data.message || 'Unknown error'), false);
+                }
+            } catch (error) {
+                console.error("Delete Error:", error);
+                showCustomModal("Error", "Server error while deleting item.", false);
+            } finally {
+                confirmDeleteBtn.textContent = "Yes, Delete";
+                confirmDeleteBtn.disabled = false;
+            }
+        });
+    }
+});

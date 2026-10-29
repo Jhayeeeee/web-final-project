@@ -13,7 +13,8 @@ const itemSchema = new mongoose.Schema({
     incidentDate: { type: String, required: true }, 
     latitude:{type: Number},
     longitude:{type: Number},
-    approvalStatus:{type: String, default:'pending'}
+    reportCount:{type: Number, default: 0},
+    reportedByUsers:[{type: mongoose.Schema.Types.ObjectId, ref: 'User'}]
 });
 
 module.exports = mongoose.model('Item', itemSchema);

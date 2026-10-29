@@ -211,9 +211,81 @@ app.put('/api/items/:id/status', verifyToken, async (req, res) => {
     }
 });
 
+// POST route para mag-report ng item
+// POST route para mag-report ng item
+app.post('/api/items/:id/report', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required." });
+        }
+
+        const item = await Item.findById(req.params.id);
+        if (!item) {
+            return res.status(404).json({ message: "Item not found" });
+        }
+
+        // 🟢 FIX: Siguraduhing may default array at number para sa mga lumang database items
+        if (!Array.isArray(item.reportedByUsers)) {
+            item.reportedByUsers = [];
+        }
+        if (typeof item.reportCount !== 'number' || isNaN(item.reportCount)) {
+            item.reportCount = 0;
+        }
+
+        // 🟢 FIX: Ligtas na pag-check kung na-report na ng user (string comparison)
+        const alreadyReported = item.reportedByUsers.some(
+            (id) => id.toString() === userId.toString()
+        );
+
+        if (alreadyReported) {
+            return res.status(400).json({ message: "You have already reported this item." });
+        }
+
+        // Add user ID at dagdag +1 sa report count
+        item.reportedByUsers.push(userId);
+        item.reportCount += 1;
+
+        await item.save();
+
+        res.status(200).json({ 
+            message: "Item reported successfully", 
+            reportCount: item.reportCount 
+        });
+
+    } catch (error) {
+        console.error("Report Error:", error);
+        res.status(500).json({ message: "Server error while reporting item." });
+    }
+});
+
+// PUT route para i-dismiss ang reports ng isang item (admin only)
+app.put('/api/items/:id/dismiss-report', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: "Forbidden. Admins only." });
+        }
+
+        const updatedItem = await Item.findByIdAndUpdate(
+            req.params.id,
+            { $set: { reportCount: 0, reportedByUsers: [] } },
+            { new: true }
+        );
+
+        if (!updatedItem) return res.status(404).json({ message: "Item not found." });
+
+        res.status(200).json({ message: "Reports dismissed successfully.", item: updatedItem });
+    } catch (error) {
+        console.error("Dismiss Report Error:", error);
+        res.status(500).json({ message: "Server error while dismissing report." });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
 module.exports = app;
+

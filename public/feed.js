@@ -1,3 +1,56 @@
+﻿
+
+/**
+ * Shows a styled toast/alert modal.
+ * @param {'success'|'error'|'warning'|'info'} type
+ * @param {string} title
+ * @param {string} message
+ */
+function showToast(type, title, message) {
+    const icons = {
+        success: `<svg class="w-14 h-14 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+        error:   `<svg class="w-14 h-14 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+        warning: `<svg class="w-14 h-14 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`,
+        info:    `<svg class="w-14 h-14 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+    };
+    document.getElementById('toastIcon').innerHTML = icons[type] || icons.info;
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastMessage').textContent = message;
+    document.getElementById('toastModal').classList.remove('hidden');
+}
+
+/**
+ * Shows the confirm-report modal and resolves with true/false.
+ * @returns {Promise<boolean>}
+ */
+function showConfirmReport() {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmReportModal');
+        const okBtn = document.getElementById('confirmReportOkBtn');
+        const cancelBtn = document.getElementById('confirmReportCancelBtn');
+        modal.classList.remove('hidden');
+
+        const cleanup = (result) => {
+            modal.classList.add('hidden');
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            resolve(result);
+        };
+        const onOk = () => cleanup(true);
+        const onCancel = () => cleanup(false);
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+    });
+}
+
+// Wire up toast OK button once
+document.getElementById('toastOkBtn').addEventListener('click', () => {
+    document.getElementById('toastModal').classList.add('hidden');
+});
+
+// =============================================
+
     const logoutBtn = document.getElementById("logoutBtn");
     const logoutBtnMobile = document.getElementById("logoutBtnMobile");
 
@@ -27,17 +80,6 @@
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     if (logoutBtnMobile) logoutBtnMobile.addEventListener('click', handleLogout);
 
-    const gridButtons = document.querySelectorAll('#itemsGrid button');
-
-    gridButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            // Kukunin ang text ng button (kung 'Claim Item' ba o 'View Details')
-            const action = e.target.textContent.trim();
-            
-            // Magpapakita muna ng alert habang wala pa tayong database para sa items
-            alert(`Action Triggered: ${action}\n\nLalabas ang buong detalye ng gamit na ito kapag nai-connect na natin ang MongoDB Items Collection.`);
-        });
-    });
 
     // --- MOBILE MENU LOGIC ---
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -113,8 +155,8 @@ if (reportForm) {
 
         const storedUser = JSON.parse(localStorage.getItem('user'));
         if (!storedUser || !storedUser.id) {
-            alert("Session expired. Please login again.");
-            window.location.href = 'index.html';
+            showToast('warning', 'Session Expired', 'Please login again to continue.');
+            setTimeout(() => { window.location.href = 'index.html'; }, 1800);
             return;
         }
 
@@ -192,64 +234,82 @@ if (reportForm) {
         }
     }
 
-    // --- DISPLAY ITEMS ---
-    function displayItems(itemsToDisplay) {
-        const itemsGrid = document.getElementById('itemsGrid');
-        itemsGrid.innerHTML = '';
+  // --- DISPLAY ITEMS ---
+function displayItems(itemsToDisplay) {
+    const itemsGrid = document.getElementById('itemsGrid');
+    itemsGrid.innerHTML = '';
 
-        if (itemsToDisplay.length === 0) {
-            itemsGrid.innerHTML = '<p class="text-neutral-500 col-span-full text-center py-8">No items found matching your criteria.</p>';
+    if (itemsToDisplay.length === 0) {
+        itemsGrid.innerHTML = '<p class="text-neutral-500 col-span-full text-center py-8">No items found matching your criteria.</p>';
+        return;
+    }
+
+    itemsToDisplay.forEach(item => {
+        // Design badge and button text based on status
+        let badgeStyle = 'bg-red-600 text-white'; // Default para sa 'lost'
+        let badgeText = item.status.toUpperCase();
+        let buttonText = 'View Details';
+        let buttonStyle = 'bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500'; // Default blue button
+
+        if (item.status === 'found') {
+            badgeStyle = 'bg-green-600 text-white';
+            buttonText = 'Claim Item';
+            buttonStyle = 'bg-green-600 hover:bg-green-700 focus-visible:ring-green-500'; // Berde kapag found
+        } else if (item.status === 'surrendered') {
+            badgeStyle = 'bg-orange-500 text-white';
+            badgeText = 'AT ADMIN';
+            buttonText = 'Claim at Admin';
+            buttonStyle = 'bg-orange-500 hover:bg-orange-600 focus-visible:ring-orange-500'; // Orange kapag nasa admin
+        } else if (item.status === 'claimed') {
             return;
         }
 
-       itemsToDisplay.forEach(item => {
-            // Design badge and button text based on status
-            let badgeStyle = 'bg-red-600 text-white'; // Default para sa 'lost'
-            let badgeText = item.status.toUpperCase();
-            let buttonText = 'View Details';
-            let buttonStyle = 'bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500'; // Default blue button
+        // --- REPORT LOGIC START ---
+        // 1. I-check kung ang naka-login na user ang nag-post nito
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        const postOwnerId = item.reportedBy?._id || item.reportedBy; 
+        const isOwner = currentUser && (postOwnerId === currentUser.id || postOwnerId === currentUser._id);
 
-            if (item.status === 'found') {
-                badgeStyle = 'bg-green-600 text-white';
-                buttonText = 'Claim Item';
-                buttonStyle = 'bg-green-600 hover:bg-green-700 focus-visible:ring-green-500'; // Berde kapag found
-            } else if (item.status === 'surrendered') {
-                badgeStyle = 'bg-orange-500 text-white';
-                badgeText = 'AT ADMIN';
-                buttonText = 'Claim at Admin';
-                buttonStyle = 'bg-orange-500 hover:bg-orange-600 focus-visible:ring-orange-500'; // Orange kapag nasa admin
-            } else if (item.status === 'claimed') {
-                return;
-            }
-
-            // Image placeholder
-            const imageContent = item.imageURL 
-                ? `<img src="${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">` 
-                : `<p class="text-neutral-400 text-sm">[ No Image Yet ]</p>`;
-
-            const cardHTML = `
-                <div class="bg-white rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-400 transition flex flex-col shadow-sm">
-                    <div class="h-44 sm:h-48 bg-neutral-700 flex items-center justify-center relative overflow-hidden">
-                        <!-- Pinalitan ang ${item.status.toUpperCase()} ng ${badgeText} para gumana ang 'AT ADMIN' -->
-                        <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-[10px] sm:text-xs font-bold px-2 py-1 rounded tracking-wide">${badgeText}</span>
-                        ${imageContent}
-                    </div>
-                    <div class="p-4 sm:p-5 flex-grow flex flex-col">
-                        <h3 class="text-sm sm:text-base font-bold text-neutral-900 mb-1.5 truncate" title="${item.itemName}">${item.itemName}</h3>
-                        <p class="text-xs sm:text-sm text-neutral-500 mb-1">Date: ${item.incidentDate || 'No date specified'}</p>
-                        <p class="text-xs sm:text-sm text-neutral-500 mb-4 line-clamp-2">Location: ${item.location}</p>
-                        
-                        <!-- Ginamit ang ${buttonStyle} dito para mag-iba-iba ang kulay -->
-                        <button onclick="openItemDetails('${item._id}')" class="mt-auto w-full py-2 text-white text-xs sm:text-sm font-semibold rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${buttonStyle}">
-                            ${buttonText}
-                        </button>
-                    </div>
-                </div>
+        // 2. I-generate ang report button kung hindi siya ang may-ari ng post
+        let reportButtonHTML = '';
+        if (!isOwner) {
+            reportButtonHTML = `
+                <button onclick="reportItem('${item._id}')" class="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 mb-3 transition w-fit" title="Report as spam or inappropriate">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                    Report Post
+                </button>
             `;
-            itemsGrid.innerHTML += cardHTML;
-        });
-    }
+        }
+        // --- REPORT LOGIC END ---
 
+        // Image placeholder
+        const imageContent = item.imageURL 
+            ? `<img src="${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">` 
+            : `<p class="text-neutral-400 text-sm">[ No Image Yet ]</p>`;
+
+        const cardHTML = `
+            <div class="bg-white rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-400 transition flex flex-col shadow-sm">
+                <div class="h-44 sm:h-48 bg-neutral-700 flex items-center justify-center relative overflow-hidden">
+                    <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-[10px] sm:text-xs font-bold px-2 py-1 rounded tracking-wide">${badgeText}</span>
+                    ${imageContent}
+                </div>
+                <div class="p-4 sm:p-5 flex-grow flex flex-col">
+                    <h3 class="text-sm sm:text-base font-bold text-neutral-900 mb-1.5 truncate" title="${item.itemName}">${item.itemName}</h3>
+                    <p class="text-xs sm:text-sm text-neutral-500 mb-1">Date: ${item.incidentDate || 'No date specified'}</p>
+                    <p class="text-xs sm:text-sm text-neutral-500 mb-2 line-clamp-2">Location: ${item.location}</p>
+                    
+                    
+                    ${reportButtonHTML}
+
+                    <button onclick="openItemDetails('${item._id}')" class="mt-auto w-full py-2 text-white text-xs sm:text-sm font-semibold rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${buttonStyle}">
+                        ${buttonText}
+                    </button>
+                </div>
+            </div>
+        `;
+        itemsGrid.innerHTML += cardHTML;
+    });
+}
     // --- FILTERING LOGIC ---
     function applyFilters() {
         const searchTerm = searchInput.value.toLowerCase();
@@ -466,3 +526,39 @@ if (closeAdminInfoBtn) {
     });
 }
 
+
+async function reportItem(itemId) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        showToast('warning', 'Login Required', 'You must be logged in to report a post.');
+        return;
+    }
+
+    const confirmed = await showConfirmReport();
+    if (!confirmed) return;
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/items/${itemId}/report`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ userId: user.id || user._id })
+        });
+
+        const data = await response.json();
+
+        if (data.message === "You have already reported this item.") {
+            showToast('warning', 'Already Reported', 'You have already flagged this post.');
+        } else if (data.message === "Item reported successfully") {
+            showToast('success', 'Report Submitted', 'Thank you! Our admins will review this post.');
+        } else {
+            showToast('error', 'Report Failed', data.message || 'Something went wrong. Please try again.');
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        showToast('error', 'Connection Error', 'Cannot connect to the server. Please try again later.');
+    }
+
+}

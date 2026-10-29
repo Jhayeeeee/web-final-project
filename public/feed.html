@@ -222,6 +222,31 @@
                 <button id="closeAdminInfoBtn" class="w-full px-4 py-2 bg-neutral-800 text-white rounded-md text-sm font-semibold hover:bg-neutral-900 transition">Got it</button>
             </div>
         </div>
+
+        <!-- Universal Toast / Alert Modal -->
+        <div id="toastModal" class="hidden fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-auto shadow-2xl text-center">
+                <div id="toastIcon" class="flex justify-center mb-4"></div>
+                <h3 id="toastTitle" class="text-base font-bold text-neutral-900 mb-1"></h3>
+                <p id="toastMessage" class="text-sm text-neutral-500 mb-5"></p>
+                <button id="toastOkBtn" class="w-full py-2 bg-neutral-900 text-white text-sm font-bold rounded-lg hover:bg-black transition">OK</button>
+            </div>
+        </div>
+
+        <!-- Confirm Report Modal -->
+        <div id="confirmReportModal" class="hidden fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-auto shadow-2xl text-center">
+                <div class="flex justify-center mb-4 text-red-500">
+                    
+                </div>
+                <h3 class="text-base font-bold text-neutral-900 mb-1">Report this Post?</h3>
+                <p class="text-sm text-neutral-500 mb-5">Are you sure you want to flag this post as spam or inappropriate? Our admins will review it.</p>
+                <div class="flex gap-3">
+                    <button id="confirmReportCancelBtn" class="flex-1 py-2 border border-neutral-300 text-neutral-700 text-sm font-semibold rounded-lg hover:bg-neutral-100 transition">Cancel</button>
+                    <button id="confirmReportOkBtn" class="flex-1 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition">Yes, Report</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script src="feed.js"></script>
