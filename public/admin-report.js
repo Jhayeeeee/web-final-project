@@ -114,6 +114,11 @@ function displayReportedItems() {
             posterName = item.reportedBy.email || item.reportedBy.fullName || item.reportedBy.name || item.reportedBy;
         }
 
+        // Author info para sa Ban button
+        const author = (item.reportedBy && typeof item.reportedBy === 'object') ? item.reportedBy : null;
+        const authorId = author ? author._id : null;
+        const isBanned = author ? !!author.isBanned : false;
+
         // Image o Placeholder
         const imageContent = item.imageURL 
             ? `<img src="${item.imageURL}" class="w-full h-full object-cover">` 
@@ -160,9 +165,13 @@ function displayReportedItems() {
                         </div>
                     </div>
                     
-                    <div class="mt-auto flex gap-2">
+                    <div class="mt-auto flex gap-2 flex-wrap">
                         <button onclick="openDetailsModal('${item._id}')" class="px-3 py-1.5 bg-neutral-800 hover:bg-black text-white rounded-md text-xs font-bold transition flex items-center justify-center">View</button>
                         <button onclick="dismissReport('${item._id}')" class="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-md text-xs font-bold transition flex items-center justify-center border border-neutral-200">Dismiss</button>
+                        ${authorId ? `
+                        <button onclick="toggleBanUser('${authorId}', ${isBanned})" class="px-3 py-1.5 ${isBanned ? 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200' : 'bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200'} rounded-md text-xs font-bold transition flex items-center justify-center border">
+                            ${isBanned ? 'Unban' : 'Ban'}
+                        </button>` : ''}
                         <button onclick="deleteAdminItem('${item._id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-md text-xs font-bold transition flex items-center justify-center border border-red-100 ml-auto">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
@@ -236,6 +245,41 @@ async function deleteAdminItem(itemId) {
         }
     } catch (error) {
         console.error('Error deleting:', error);
+        showToast('error', 'Connection Error', 'Cannot connect to the server.');
+    }
+}
+
+// --- 4b. BAN / UNBAN POSTER ---
+async function toggleBanUser(userId, isCurrentlyBanned) {
+    const confirmed = await showConfirm(
+        isCurrentlyBanned ? 'Unban this Account?' : 'Ban this Account?',
+        isCurrentlyBanned
+            ? 'This account will be able to log in again.'
+            : 'This user will be blocked from logging in. Their existing posts will not be removed.',
+        isCurrentlyBanned ? 'Yes, Unban' : 'Yes, Ban',
+        isCurrentlyBanned ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'
+    );
+    if (!confirmed) return;
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:3000/api/users/${userId}/ban`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (response.ok) {
+            showToast('success', data.isBanned ? 'User Banned' : 'User Unbanned', data.message || 'Account status updated.');
+            setTimeout(() => {
+                document.getElementById('toastModal').classList.add('hidden');
+                loadReportedItems();
+            }, 1500);
+        } else {
+            showToast('error', 'Action Failed', data.message || 'Failed to update user status.');
+        }
+    } catch (error) {
+        console.error('Error updating ban status:', error);
         showToast('error', 'Connection Error', 'Cannot connect to the server.');
     }
 }

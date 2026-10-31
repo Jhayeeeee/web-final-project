@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['student', 'admin'],
         default: 'student' // 'student' ang default para lahat ng bagong register ay student agad
+    },
+
+    isBanned:{
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });  
 
