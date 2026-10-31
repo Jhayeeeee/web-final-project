@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found - My Account</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-neutral-100 min-h-screen font-sans">
+
+    <!-- NAVBAR -->
+    <nav class="bg-neutral-900 text-white p-4 shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-6">
+                <h1 class="text-xl font-bold tracking-wider text-white">Lost & Found Portal</h1>
+                <div class="hidden md:flex space-x-4">
+                    <a href="feed.html" class="text-neutral-400 hover:text-white transition pb-1">Feed</a>
+                    <a href="my-claims.html" class="text-neutral-400 hover:text-white transition pb-1">My Claims</a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-semibold" id="navUserName">Student User</p>
+                    <p class="text-xs text-neutral-400">University Account</p>
+                </div>
+                <div class="h-8 w-8 rounded-full bg-neutral-700 flex items-center justify-center font-bold text-sm">
+                    U
+                </div>
+                <button id="logoutBtn" class="text-sm text-neutral-400 hover:text-white transition ml-2">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 mt-4">
+        <div class="mb-6 border-b border-neutral-300 pb-4 flex justify-between items-end">
+            <div>
+                <h2 class="text-2xl font-bold text-neutral-800">Account Settings</h2>
+                <p class="text-sm text-neutral-500 mt-1">Manage your profile and security.</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+            <!-- Account Info Section -->
+            <div class="p-6 border-b border-neutral-200 bg-neutral-50">
+                <h3 class="text-lg font-bold text-neutral-900 mb-4">Profile Information</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wide mb-1">Full Name</label>
+                        <p id="profileName" class="text-neutral-800 font-medium py-2 px-3 bg-neutral-200 rounded-md">Loading...</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wide mb-1">Email Address</label>
+                        <p id="profileEmail" class="text-neutral-800 font-medium py-2 px-3 bg-neutral-200 rounded-md">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Password Section -->
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-neutral-900 mb-4">Change Password</h3>
+                <form id="changePasswordForm" class="space-y-4 max-w-md">
+                    <div>
+                        <label class="block text-sm font-semibold text-neutral-700 mb-1">Current Password</label>
+                        <input type="password" id="currentPassword" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-neutral-800 focus:border-neutral-800 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-neutral-700 mb-1">New Password</label>
+                        <input type="password" id="newPassword" required minlength="6" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-neutral-800 focus:border-neutral-800 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-neutral-700 mb-1">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" required minlength="6" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-neutral-800 focus:border-neutral-800 outline-none transition">
+                    </div>
+                    <div id="passwordMessage" class="text-sm hidden font-medium"></div>
+                    <button type="submit" id="updatePasswordBtn" class="w-full py-2.5 bg-neutral-900 hover:bg-black text-white font-bold rounded-lg transition shadow-sm mt-2">
+                        Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="profile.js"></script>
+</body>
+</html>

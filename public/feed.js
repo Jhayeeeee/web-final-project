@@ -91,7 +91,7 @@ document.getElementById('toastOkBtn').addEventListener('click', () => {
     }
 
     // --- MODAL LOGIC ---
-    const openReportBtn = document.getElementById('openReportBtn');
+    const openReportBtn = document.getElementById('reportItemBtn');
     const openReportBtnMobile = document.getElementById('openReportBtnMobile');
     const closeReportBtn = document.getElementById('closeReportBtn');
     const reportModal = document.getElementById('reportModal');
