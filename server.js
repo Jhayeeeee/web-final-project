@@ -25,6 +25,12 @@ cloudinary.config({
     secure: true
 });
 
+console.log("Cloudinary configured:", Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+));
+
 // Hindi na sa disk sinisave ang upload. Nasa memory muna, tapos diretso sa Cloudinary.
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -61,9 +67,10 @@ app.use(express.static(path.join(__dirname, "public")));
 
 mongoose
     .connect(process.env.MONGO_URI)
-    .then(() => console.log("Connected to MongoDB"))
+    .then(() => console.log("Connected to MongoDB, database:", mongoose.connection.name))
     .catch((err) => console.error("Failed to connect to MongoDB:", err));
 
+    
 // --- MIDDLEWARE: check ng token ---
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -340,9 +347,12 @@ app.post("/api/items/:id/report", async (req, res) => {
             message: "Item reported successfully",
             reportCount: item.reportCount
         });
-    } catch (error) {
-        console.error("Report Error:", error);
-        res.status(500).json({ message: "Server error while reporting item." });
+        } catch (error) {
+        console.error("Error reporting item:", error);
+        res.status(500).json({
+            message: "Server error while saving the item.",
+            detail: error.message
+        });
     }
 });
 
@@ -481,6 +491,26 @@ app.post("/api/admin/notifications/broadcast", verifyToken, async (req, res) => 
         res.status(500).json({ message: "Server error while sending notification." });
     }
 });
+
+// --- DIAGNOSTIC: tingnan kung tama ang Cloudinary credentials ---
+app.get("/api/test-cloudinary", async (req, res) => {
+    try {
+        const result = await cloudinary.api.ping();
+        res.json({ ok: true, result });
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            message: error.message,
+            configured: {
+                cloud_name: Boolean(process.env.CLOUDINARY_CLOUD_NAME),
+                api_key: Boolean(process.env.CLOUDINARY_API_KEY),
+                api_secret: Boolean(process.env.CLOUDINARY_API_SECRET)
+            }
+        });
+    }
+});
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
