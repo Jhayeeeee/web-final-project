@@ -11,7 +11,7 @@ const multer = require('multer');
 
 // 🟢 BAGO: Naka-setup na ang JWT variables dito
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "university_lost_and_found_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // for saving photos
 const storage = multer.diskStorage({
