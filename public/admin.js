@@ -2,6 +2,13 @@ const adminInventoryGrid = document.getElementById('adminInventoryGrid');
 const searchInput = document.getElementById('adminSearch');
 const storedUser = JSON.parse(localStorage.getItem('user'));
 
+// --- HTML ESCAPE (para sa text na galing sa user) ---
+function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
 // Kick out non-admins or logged out users
 if (!storedUser || storedUser.role !== 'admin') {
     alert("Unauthorized access. Please login as an admin.");
@@ -42,7 +49,7 @@ async function loadAdminInventory() {
         allSystemItems = await response.json();
         updateDashboard();
     } catch (error) {
-        console.error("Error loading inventory:", error);
+        console.error('Error loading inventory:', error);
         adminInventoryGrid.innerHTML = `<p class="text-red-500">Error connecting to server.</p>`;
     }
 }
@@ -93,7 +100,7 @@ function setFilter(status) {
 }
 
 function applyFilters() {
-    const searchTerm = searchInput.value.toLowerCase();
+    const searchTerm = (searchInput.value || '').toLowerCase();
 
     let filtered = allSystemItems;
     if (currentFilter !== 'all') {
@@ -102,7 +109,7 @@ function applyFilters() {
 
     if (searchTerm) {
         filtered = filtered.filter(item =>
-            item.itemName.toLowerCase().includes(searchTerm) ||
+            (item.itemName || '').toLowerCase().includes(searchTerm) ||
             (item.location || '').toLowerCase().includes(searchTerm) ||
             (item.reportedBy?.email && item.reportedBy.email.toLowerCase().includes(searchTerm))
         );
@@ -120,8 +127,10 @@ function displayAdminItems(items) {
     }
 
     items.forEach(item => {
-        const imageContent = item.imageURL
-            ? `<img src="${API_BASE}${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">`
+        // imgSrc() ang bahala: buong Cloudinary URL o lumang /uploads/ path, o '' kung sira
+        const imgUrl = imgSrc(item.imageURL);
+        const imageContent = imgUrl
+            ? `<img src="${imgUrl}" alt="${escapeHtml(item.itemName)}" class="w-full h-full object-contain" onerror="this.style.display='none'">`
             : `<div class="w-full h-full bg-[#3a3a3a] flex flex-col items-center justify-center text-neutral-400" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);">
                 <span class="text-xs font-semibold tracking-wide">No image provided</span>
                </div>`;
@@ -153,27 +162,27 @@ function displayAdminItems(items) {
         const cardHTML = `
             <div class="bg-white rounded-xl overflow-hidden border border-neutral-200 shadow-sm flex flex-col">
                 <div class="h-44 relative overflow-hidden">
-                    <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">${item.status}</span>
+                    <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">${escapeHtml(item.status)}</span>
                     ${imageContent}
                 </div>
                 <div class="p-4 flex-grow flex flex-col">
                     <div class="flex justify-between items-start mb-4 gap-2">
-                        <h3 class="text-sm sm:text-base font-bold text-gray-900 truncate" title="${item.itemName}">${item.itemName}</h3>
+                        <h3 class="text-sm sm:text-base font-bold text-gray-900 truncate" title="${escapeHtml(item.itemName)}">${escapeHtml(item.itemName)}</h3>
                         <span class="text-xs text-gray-400 shrink-0">#${displayId}</span>
                     </div>
 
                     <div class="space-y-2 mb-6">
                         <p class="text-xs text-gray-500 flex items-center gap-2">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                            ${item.reportedBy?.email || 'Unknown User'}
+                            ${escapeHtml(item.reportedBy?.email || 'Unknown User')}
                         </p>
                         <p class="text-xs text-gray-500 flex items-center gap-2">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            ${item.incidentDate || 'N/A'}
+                            ${escapeHtml(item.incidentDate || 'N/A')}
                         </p>
                         <p class="text-xs text-gray-500 flex items-center gap-2">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <span class="truncate">${item.location || 'N/A'}</span>
+                            <span class="truncate">${escapeHtml(item.location || 'N/A')}</span>
                         </p>
                     </div>
 
@@ -194,7 +203,7 @@ function displayAdminItems(items) {
 // --- CUSTOM MODAL HELPER ---
 function showCustomModal(title, message, isConfirm = false, callback = null) {
     const modal = document.getElementById('customModal');
-    if (!modal) return console.error("Custom Modal HTML is missing in admin.html!");
+    if (!modal) return console.error('Custom Modal HTML is missing in admin.html!');
 
     document.getElementById('customModalTitle').textContent = title;
     document.getElementById('customModalMessage').textContent = message;
@@ -223,7 +232,7 @@ function showCustomModal(title, message, isConfirm = false, callback = null) {
 }
 
 function markAsClaimed(itemId) {
-    showCustomModal("Mark as Claimed", "Are you sure you want to mark this item as CLAIMED?", true, async (confirmed) => {
+    showCustomModal('Mark as Claimed', 'Are you sure you want to mark this item as CLAIMED?', true, async (confirmed) => {
         if (!confirmed) return;
 
         try {
@@ -241,17 +250,17 @@ function markAsClaimed(itemId) {
             if (response.ok) {
                 loadAdminInventory();
             } else {
-                showCustomModal("Error", "Session expired or access denied. Please login again.", false);
+                showCustomModal('Error', 'Session expired or access denied. Please login again.', false);
             }
         } catch (error) {
             console.error('Error:', error);
-            showCustomModal("Error", "Cannot connect to server.", false);
+            showCustomModal('Error', 'Cannot connect to server.', false);
         }
     });
 }
 
 function deleteAdminItem(itemId) {
-    showCustomModal("Delete Post", "Are you sure you want to permanently delete this post? This cannot be undone.", true, async (confirmed) => {
+    showCustomModal('Delete Post', 'Are you sure you want to permanently delete this post? This cannot be undone.', true, async (confirmed) => {
         if (!confirmed) return;
 
         try {
@@ -267,11 +276,11 @@ function deleteAdminItem(itemId) {
             if (response.ok) {
                 loadAdminInventory();
             } else {
-                showCustomModal("Error", "Session expired or access denied. Please login again.", false);
+                showCustomModal('Error', 'Session expired or access denied. Please login again.', false);
             }
         } catch (error) {
             console.error('Error:', error);
-            showCustomModal("Error", "Cannot connect to server.", false);
+            showCustomModal('Error', 'Cannot connect to server.', false);
         }
     });
 }
@@ -285,13 +294,13 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!response.ok) throw new Error("Failed to fetch data");
+        if (!response.ok) throw new Error('Failed to fetch data');
         const items = await response.json();
 
-        let csvContent = "Item ID,Item Name,Category,Status,Reported By,Date,Location\n";
+        let csvContent = 'Item ID,Item Name,Category,Status,Reported By,Date,Location\n';
 
         items.forEach((item, index) => {
-            const customId = "ITEM" + String(index + 1).padStart(3, '0');
+            const customId = 'ITEM' + String(index + 1).padStart(3, '0');
             const rawDate = item.createdAt || item.date || item.dateReported;
             const date = rawDate ? new Date(rawDate).toLocaleDateString() : 'N/A';
             const itemName = item.itemName || 'N/A';
@@ -304,15 +313,15 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
             }
 
             const row = `"${customId}","${itemName}","${category}","${item.status}","${reportedBy}","${date}","${locationData}"`;
-            csvContent += row + "\n";
+            csvContent += row + '\n';
         });
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
 
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Lost_and_Found_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Lost_and_Found_Report_${new Date().toISOString().split('T')[0]}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -320,7 +329,7 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
 
     } catch (error) {
         console.error('Export error:', error);
-        alert("Hindi ma-generate ang report. Pakisuri ang koneksyon sa server.");
+        alert('Hindi ma-generate ang report. Pakisuri ang koneksyon sa server.');
     }
 });
 
@@ -333,18 +342,20 @@ function openDetailsModal(itemId) {
     const rawDate = item.createdAt || item.date || item.dateReported;
     const dateFormatted = rawDate ? new Date(rawDate).toLocaleString() : 'N/A';
 
+    const detailImgUrl = imgSrc(item.imageURL);
+
     detailsContent.innerHTML = `
         <div class="space-y-2">
-            ${item.imageURL ? `<img src="${API_BASE}${item.imageURL}" class="w-full h-48 object-cover rounded-lg mb-3 border">` : ''}
-            <p><strong>Item Name:</strong> ${item.itemName || 'N/A'}</p>
-            <p><strong>Description:</strong> ${item.description || 'No description provided.'}</p>
-            <p><strong>Category:</strong> ${item.category || 'N/A'}</p>
-            <p><strong>Status:</strong> <span class="uppercase font-semibold px-2 py-0.5 bg-neutral-100 rounded text-xs">${item.status}</span></p>
-            <p><strong>Reported By:</strong> ${item.reportedBy?.email || item.reportedBy || 'Unknown'}</p>
-            <p><strong>Date Reported:</strong> ${dateFormatted}</p>
-            <p><strong>Incident Date:</strong> ${item.incidentDate || 'N/A'}</p>
-            <p><strong>Location:</strong> ${item.location || 'N/A'}</p>
-            ${item.latitude && item.longitude ? `<p><strong>Coordinates:</strong> ${item.latitude}, ${item.longitude}</p>` : ''}
+            ${detailImgUrl ? `<img src="${detailImgUrl}" alt="${escapeHtml(item.itemName)}" class="w-full h-48 object-contain bg-neutral-100 rounded-lg mb-3 border" onerror="this.style.display='none'">` : ''}
+            <p><strong>Item Name:</strong> ${escapeHtml(item.itemName || 'N/A')}</p>
+            <p><strong>Description:</strong> ${escapeHtml(item.description || 'No description provided.')}</p>
+            <p><strong>Category:</strong> ${escapeHtml(item.category || 'N/A')}</p>
+            <p><strong>Status:</strong> <span class="uppercase font-semibold px-2 py-0.5 bg-neutral-100 rounded text-xs">${escapeHtml(item.status)}</span></p>
+            <p><strong>Reported By:</strong> ${escapeHtml(item.reportedBy?.email || (typeof item.reportedBy === 'string' ? item.reportedBy : 'Unknown'))}</p>
+            <p><strong>Date Reported:</strong> ${escapeHtml(dateFormatted)}</p>
+            <p><strong>Incident Date:</strong> ${escapeHtml(item.incidentDate || 'N/A')}</p>
+            <p><strong>Location:</strong> ${escapeHtml(item.location || 'N/A')}</p>
+            ${item.latitude && item.longitude ? `<p><strong>Coordinates:</strong> ${escapeHtml(item.latitude)}, ${escapeHtml(item.longitude)}</p>` : ''}
         </div>
     `;
 
@@ -353,4 +364,4 @@ function openDetailsModal(itemId) {
 
 function closeDetailsModal() {
     document.getElementById('detailsModal').classList.add('hidden');
-}
+}   
