@@ -55,11 +55,37 @@ document.getElementById('toastOkBtn').addEventListener('click', () => {
 });
 
 // =============================================
+// --- DOM REFERENCES ---
+// Nasa itaas para hindi magkaroon ng "before initialization" error
+// =============================================
 
-const logoutBtn = document.getElementById("logoutBtn");
-const logoutBtnMobile = document.getElementById("logoutBtnMobile");
+const logoutBtn = document.getElementById('logoutBtn');
+const logoutBtnMobile = document.getElementById('logoutBtnMobile');
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileNavMenu = document.getElementById('mobileNavMenu');
+const openReportBtn = document.getElementById('reportItemBtn');
+const openReportBtnMobile = document.getElementById('openReportBtnMobile');
+const closeReportBtn = document.getElementById('closeReportBtn');
+const reportModal = document.getElementById('reportModal');
+const reportForm = document.getElementById('reportForm');
+const reportMessage = document.getElementById('reportMessage');
+const buildingSelect = document.getElementById('campusBuilding');
+const campusRoom = document.getElementById('campusRoom');
+const getLocationBtn = document.getElementById('getLocationBtn');
+const geoStatus = document.getElementById('geoStatus');
+const latInput = document.getElementById('latitude');
+const lngInput = document.getElementById('longitude');
+const searchInput = document.getElementById('searchInput');
+const categoryFilter = document.getElementById('categoryFilter');
+const statusFilters = document.getElementsByName('status');
+const closeAdminInfoBtn = document.getElementById('closeAdminInfoBtn');
 
-// Kunin ang user data mula sa localStorage
+let allItems = []; // Dito ise-save ang lahat ng data galing database
+
+// =============================================
+// --- USER SESSION & NAVBAR ---
+// =============================================
+
 const storedUser = JSON.parse(localStorage.getItem('user'));
 
 // I-update ang pangalan sa Navbar (Desktop at Mobile)
@@ -69,7 +95,7 @@ if (storedUser && storedUser.fullName) {
     if (navUserName) navUserName.textContent = storedUser.fullName;
     if (mobileNavUserName) mobileNavUserName.textContent = storedUser.fullName;
 
-    // Para mapalitan din yung letrang "U" sa bilog ng unang letra ng pangalan nila
+    // Para mapalitan din ang letrang "U" sa bilog ng unang letra ng pangalan
     const userInitialCircles = document.querySelectorAll('.user-initial-circle, .rounded-full.bg-neutral-700');
     userInitialCircles.forEach(circle => {
         circle.textContent = storedUser.fullName.charAt(0).toUpperCase();
@@ -85,29 +111,16 @@ const handleLogout = () => {
 if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 if (logoutBtnMobile) logoutBtnMobile.addEventListener('click', handleLogout);
 
-
 // --- MOBILE MENU LOGIC ---
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const mobileNavMenu = document.getElementById('mobileNavMenu');
 if (mobileMenuBtn && mobileNavMenu) {
     mobileMenuBtn.addEventListener('click', () => {
         mobileNavMenu.classList.toggle('hidden');
     });
 }
 
-// --- MODAL LOGIC ---
-const openReportBtn = document.getElementById('reportItemBtn');
-const openReportBtnMobile = document.getElementById('openReportBtnMobile');
-const closeReportBtn = document.getElementById('closeReportBtn');
-const reportModal = document.getElementById('reportModal');
-const reportForm = document.getElementById('reportForm');
-const reportMessage = document.getElementById('reportMessage');
-const buildingSelect = document.getElementById('campusBuilding');
-const campusRoom = document.getElementById('campusRoom');
-const getLocationBtn = document.getElementById('getLocationBtn');
-const geoStatus = document.getElementById('geoStatus');
-const latInput = document.getElementById('latitude');
-const lngInput = document.getElementById('longitude');
+// =============================================
+// --- REPORT MODAL LOGIC ---
+// =============================================
 
 // I-reset ang Area/Room dropdown sa default na estado
 function resetRoomDropdown() {
@@ -152,15 +165,18 @@ if (closeReportBtn) {
     });
 }
 
+// =============================================
 // --- SUBMIT ITEM LOGIC ---
+// =============================================
+
 if (reportForm) {
     reportForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // --- VALIDATION: kailangan ng GPS o building ---
+        // VALIDATION: kailangan ng GPS o building
         const latValue = latInput.value;
 
-        if (!latValue && buildingSelect.value === "") {
+        if (!latValue && buildingSelect.value === '') {
             buildingSelect.setCustomValidity("Please choose a building. If it's not among the choices, select 'other'");
             buildingSelect.reportValidity();
             return;
@@ -207,8 +223,8 @@ if (reportForm) {
             const data = await response.json();
 
             if (response.ok) {
-                reportMessage.textContent = "Item successfully saved!";
-                reportMessage.className = "text-xs font-bold text-center text-green-600 block mt-2";
+                reportMessage.textContent = 'Item successfully saved!';
+                reportMessage.className = 'text-xs font-bold text-center text-green-600 block mt-2';
 
                 setTimeout(() => {
                     reportModal.classList.add('hidden');
@@ -218,27 +234,22 @@ if (reportForm) {
                     loadItems();
                 }, 2000);
             } else {
-                reportMessage.textContent = data.message || "Failed to save item.";
-                reportMessage.className = "text-xs font-bold text-center text-red-500 block mt-2";
+                reportMessage.textContent = data.detail || data.message || 'Failed to save item.';
+                reportMessage.className = 'text-xs font-bold text-center text-red-500 block mt-2';
             }
         } catch (error) {
-            console.error("Error saving item:", error);
-            reportMessage.textContent = "Cannot connect to server.";
-            reportMessage.className = "text-xs font-bold text-center text-red-500 block mt-2";
+            console.error('Error saving item:', error);
+            reportMessage.textContent = 'Cannot connect to server.';
+            reportMessage.className = 'text-xs font-bold text-center text-red-500 block mt-2';
         }
     });
 }
 
-
-// --- VARIABLES PARA SA FILTERING ---
-let allItems = []; // Dito natin ise-save ang lahat ng data galing database
-const searchInput = document.getElementById('searchInput');
-const categoryFilter = document.getElementById('categoryFilter');
-const statusFilters = document.getElementsByName('status');
-
-
+// =============================================
 // --- LOAD ITEMS (may auto-retry para sa Render cold start) ---
-// Hiwalay ang fetch at render: ang error sa pag-display ay hindi na mapagkakamalang connection error
+// Hiwalay ang fetch at render: ang error sa pag-display ay hindi mapagkakamalang connection error
+// =============================================
+
 async function loadItems(retries = 3) {
     const grid = document.getElementById('itemsGrid');
     let data;
@@ -268,7 +279,10 @@ async function loadItems(retries = 3) {
     applyFilters();
 }
 
+// =============================================
 // --- DISPLAY ITEMS ---
+// =============================================
+
 function displayItems(itemsToDisplay) {
     const itemsGrid = document.getElementById('itemsGrid');
     itemsGrid.innerHTML = '';
@@ -279,9 +293,9 @@ function displayItems(itemsToDisplay) {
     }
 
     itemsToDisplay.forEach(item => {
-        // Design badge and button text based on status
+        // Badge at button ayon sa status
         let badgeStyle = 'bg-red-600 text-white'; // Default para sa 'lost'
-        let badgeText = item.status.toUpperCase();
+        let badgeText = (item.status || '').toUpperCase();
         let buttonText = 'View Details';
         let buttonStyle = 'bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500';
 
@@ -314,16 +328,16 @@ function displayItems(itemsToDisplay) {
             `;
         }
 
-        // Image: idinadugtong ang API_BASE dahil /uploads/... lang ang nasa database
-        // object-contain para buo ang larawan; nakatago ang img kung hindi ma-load
-        const imageContent = item.imageURL
-            ? `<img src="${API_BASE}${item.imageURL}" alt="${escapeHtml(item.itemName)}" class="w-full h-full object-contain" onerror="this.style.display='none'">`
+        // Larawan: imgSrc() ang bahala kung buong Cloudinary URL o lumang /uploads/ path
+        const imgUrl = imgSrc(item.imageURL);
+        const imageContent = imgUrl
+            ? `<img src="${imgUrl}" alt="${escapeHtml(item.itemName)}" class="w-full h-full object-contain" onerror="this.style.display='none'">`
             : `<p class="text-neutral-400 text-sm">[ No Image Yet ]</p>`;
 
         const cardHTML = `
             <div class="bg-white rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-400 transition flex flex-col shadow-sm">
                 <div class="h-44 sm:h-48 bg-neutral-700 flex items-center justify-center relative overflow-hidden">
-                    <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-[10px] sm:text-xs font-bold px-2 py-1 rounded tracking-wide">${badgeText}</span>
+                    <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-[10px] sm:text-xs font-bold px-2 py-1 rounded tracking-wide">${escapeHtml(badgeText)}</span>
                     ${imageContent}
                 </div>
                 <div class="p-4 sm:p-5 flex-grow flex flex-col">
@@ -343,7 +357,10 @@ function displayItems(itemsToDisplay) {
     });
 }
 
+// =============================================
 // --- FILTERING LOGIC ---
+// =============================================
+
 function applyFilters() {
     const searchTerm = searchInput.value.toLowerCase();
     const selectedCategory = categoryFilter.value;
@@ -368,43 +385,38 @@ function applyFilters() {
     displayItems(filteredItems);
 }
 
-// --- EVENT LISTENERS (Nag-aabang ng click/type sa filters) ---
+// --- EVENT LISTENERS (filters) ---
 if (searchInput) searchInput.addEventListener('input', applyFilters);
 if (categoryFilter) categoryFilter.addEventListener('change', applyFilters);
 statusFilters.forEach(radio => radio.addEventListener('change', applyFilters));
 
-// Patakbuhin sa simula
-loadItems();
-
-
+// =============================================
 // --- ITEM DETAILS MODAL LOGIC ---
+// =============================================
+
 function openItemDetails(itemId) {
-    // Hanapin ang item sa array gamit ang ID
     const item = allItems.find(i => i._id === itemId);
     if (!item) return;
 
+    // Larawan sa modal
+    const detailImgUrl = imgSrc(item.imageURL);
     const imageContainer = document.getElementById('detailImageContainer');
-    if (item.imageURL) {
-        imageContainer.innerHTML = `<img src="${API_BASE}${item.imageURL}" alt="${escapeHtml(item.itemName)}" class="w-full h-full object-contain" onerror="this.style.display='none'">`;
-    } else {
-        imageContainer.innerHTML = `<p class="text-neutral-400">[ No Image Yet ]</p>`;
-    }
+    imageContainer.innerHTML = detailImgUrl
+        ? `<img src="${detailImgUrl}" alt="${escapeHtml(item.itemName)}" class="w-full h-full object-contain" onerror="this.style.display='none'">`
+        : `<p class="text-neutral-400">[ No Image Yet ]</p>`;
 
-    // Ilagay ang text sa modal (textContent na kaya ligtas na)
+    // textContent na kaya ligtas na laban sa injection
     document.getElementById('detailName').textContent = item.itemName || 'N/A';
     document.getElementById('detailCategory').textContent = item.category || 'N/A';
     document.getElementById('detailDesc').textContent = item.description || 'No description provided.';
     document.getElementById('detailLocation').textContent = item.location || 'N/A';
+    document.getElementById('detailDate').textContent = item.incidentDate || 'No date specified';
 
     // Pangalan ng nag-post
     const posterNameElement = document.getElementById('detailPosterName');
-    if (item.reportedBy && item.reportedBy.fullName) {
-        posterNameElement.textContent = item.reportedBy.fullName;
-    } else {
-        posterNameElement.textContent = 'Unknown User';
-    }
+    posterNameElement.textContent = (item.reportedBy && item.reportedBy.fullName) ? item.reportedBy.fullName : 'Unknown User';
 
-    // --- GOOGLE MAPS LINK ---
+    // Google Maps link
     const mapLink = document.getElementById('detailMapLink');
     if (item.latitude && item.longitude) {
         mapLink.href = `https://www.google.com/maps?q=${encodeURIComponent(item.latitude)},${encodeURIComponent(item.longitude)}`;
@@ -413,11 +425,9 @@ function openItemDetails(itemId) {
         mapLink.classList.add('hidden');
     }
 
-    document.getElementById('detailDate').textContent = item.incidentDate || 'No date specified';
-
     // Kulay ng status badge sa modal
     const statusBadge = document.getElementById('detailStatus');
-    statusBadge.textContent = item.status.toUpperCase();
+    statusBadge.textContent = (item.status || '').toUpperCase();
     statusBadge.className = item.status === 'found'
         ? 'text-xs font-bold px-2 py-1 rounded tracking-wide bg-green-600 text-white'
         : 'text-xs font-bold px-2 py-1 rounded tracking-wide bg-red-600 text-white';
@@ -456,12 +466,15 @@ function closeItemDetails() {
     document.getElementById('itemDetailsModal').classList.add('hidden');
 }
 
-// --- GEOLOCATION AT CASCADING DROPDOWN LOGIC ---
+// =============================================
+// --- GEOLOCATION AT CASCADING DROPDOWN ---
+// =============================================
+
 const plmRooms = {
-    "Gusaling Corazon Aquino": ["GCA 101", "GCA 202", "GCA 303", "Canteen", "Restroom"],
-    "Gusaling Villegas": ["GV 101", "GV 204", "GV 305", "Restroom"],
-    "University Library": ["Main Reading Area", "Internet Section", "Baggage Counter"],
-    "Campus Grounds": ["Flagpole", "Field", "Main Gate", "Parking"]
+    'Gusaling Corazon Aquino': ['GCA 101', 'GCA 202', 'GCA 303', 'Canteen', 'Restroom'],
+    'Gusaling Villegas': ['GV 101', 'GV 204', 'GV 305', 'Restroom'],
+    'University Library': ['Main Reading Area', 'Internet Section', 'Baggage Counter'],
+    'Campus Grounds': ['Flagpole', 'Field', 'Main Gate', 'Parking']
 };
 
 if (buildingSelect) {
@@ -489,20 +502,20 @@ if (buildingSelect) {
 if (getLocationBtn) {
     getLocationBtn.addEventListener('click', () => {
         if (!navigator.geolocation) {
-            geoStatus.textContent = "Geolocation is not supported by your browser.";
-            geoStatus.className = "text-xs text-red-500 mb-3 text-center block";
+            geoStatus.textContent = 'Geolocation is not supported by your browser.';
+            geoStatus.className = 'text-xs text-red-500 mb-3 text-center block';
             return;
         }
 
-        geoStatus.textContent = "Locating... Please allow location access.";
-        geoStatus.className = "text-xs text-blue-500 mb-3 text-center block";
+        geoStatus.textContent = 'Locating... Please allow location access.';
+        geoStatus.className = 'text-xs text-blue-500 mb-3 text-center block';
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 latInput.value = position.coords.latitude;
                 lngInput.value = position.coords.longitude;
                 geoStatus.textContent = `📍 GPS Tagged! (Accurate to ~${Math.round(position.coords.accuracy)} meters).`;
-                geoStatus.className = "text-xs text-green-600 font-semibold mb-3 text-center block";
+                geoStatus.className = 'text-xs text-green-600 font-semibold mb-3 text-center block';
                 getLocationBtn.classList.replace('bg-neutral-800', 'bg-green-700');
 
                 // may GPS na, kaya hindi na kailangan ng building error
@@ -510,14 +523,17 @@ if (getLocationBtn) {
             },
             (error) => {
                 geoStatus.textContent = `GPS Error: ${error.message}. Please select building manually.`;
-                geoStatus.className = "text-xs text-red-500 mb-3 text-center block";
+                geoStatus.className = 'text-xs text-red-500 mb-3 text-center block';
             },
             { enableHighAccuracy: true }
         );
     });
 }
 
+// =============================================
 // --- DATE RESTRICTION LOGIC ---
+// =============================================
+
 document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('itemDate');
 
@@ -539,15 +555,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Isara ang Admin Info Modal kapag pinindot ang "Got it"
-const closeAdminInfoBtn = document.getElementById('closeAdminInfoBtn');
 if (closeAdminInfoBtn) {
     closeAdminInfoBtn.addEventListener('click', () => {
         document.getElementById('adminInfoModal').classList.add('hidden');
     });
 }
 
-
+// =============================================
 // --- REPORT POST (spam/inappropriate) ---
+// =============================================
+
 async function reportItem(itemId) {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
@@ -570,15 +587,21 @@ async function reportItem(itemId) {
 
         const data = await response.json();
 
-        if (data.message === "You have already reported this item.") {
+        if (data.message === 'You have already reported this item.') {
             showToast('warning', 'Already Reported', 'You have already flagged this post.');
-        } else if (data.message === "Item reported successfully") {
+        } else if (data.message === 'Item reported successfully') {
             showToast('success', 'Report Submitted', 'Thank you! Our admins will review this post.');
         } else {
             showToast('error', 'Report Failed', data.message || 'Something went wrong. Please try again.');
         }
     } catch (error) {
-        console.error("Error:", error);
+        console.error('Error:', error);
         showToast('error', 'Connection Error', 'Cannot connect to the server. Please try again later.');
     }
 }
+
+// =============================================
+// --- INIT ---
+// =============================================
+
+loadItems();
