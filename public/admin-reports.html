@@ -7,47 +7,52 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-neutral-100 min-h-screen font-sans">
-   <nav class="bg-[#1a1a1a] text-white py-3 px-4 sm:px-6 shadow-md flex justify-between items-center gap-3">
-        <div class="flex items-center gap-4 sm:gap-6 min-w-0">
-            <h1 class="text-sm sm:text-lg font-bold tracking-wide truncate hidden md:block">Admin Panel</h1>
-            
-        
-<div class="flex items-center bg-transparent rounded-lg p-1 gap-2">
-    <a href="admin.html" class="px-4 py-1.5 rounded-md bg-transparent text-gray-400 hover:text-white hover:bg-neutral-800 text-sm font-medium transition">Inventory</a>
-    <a href="admin-reports.html"  class="px-4 py-1.5 rounded-md bg-neutral-600 text-white text-sm font-bold shadow transition">
-        Post Management    
-    </a>
-    <a href="admin-notify.html" class="px-4 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-neutral-700 text-sm font-medium transition">Notifications</a>
-</div>
-        </div>
 
-        <div class="flex items-center gap-2 sm:gap-4 shrink-0">
-            <div class="flex items-center gap-2">
-                <span id="adminInitials" class="bg-neutral-600 text-white w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xs font-bold uppercase shrink-0">AD</span>
-                <span id="adminNameDisplay" class="text-xs sm:text-sm hidden sm:inline max-w-[140px] truncate">Admin Account</span>
+    <!-- NAVBAR -->
+    <nav class="bg-[#1a1a1a] text-white px-4 sm:px-6 py-3 shadow-md">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+
+            <!-- Left: title & tabs -->
+            <div class="flex flex-wrap items-center gap-3 sm:gap-6 min-w-0">
+                <h1 class="text-lg font-bold tracking-wide hidden md:block">Admin Panel</h1>
+                <div class="flex flex-wrap items-center bg-neutral-800 rounded-lg p-1 gap-1">
+                    <a href="admin.html" class="whitespace-nowrap px-3 sm:px-4 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-neutral-700 text-xs sm:text-sm font-medium transition">Inventory</a>
+                    <a href="admin-reports.html" class="whitespace-nowrap px-3 sm:px-4 py-1.5 rounded-md bg-neutral-600 text-white text-xs sm:text-sm font-bold shadow transition">Post Management</a>
+                    <a href="admin-notify.html" class="whitespace-nowrap px-3 sm:px-4 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-neutral-700 text-xs sm:text-sm font-medium transition">Notifications</a>
+                </div>
             </div>
-            <button id="logoutBtn" class="border border-neutral-600 px-3 sm:px-4 py-1.5 rounded hover:bg-neutral-800 text-xs sm:text-sm transition shrink-0">Logout</button>
+
+            <!-- Right: user & logout -->
+            <div class="flex items-center gap-2 sm:gap-4 ml-auto shrink-0">
+                <div class="flex items-center gap-2">
+                    <span id="adminInitials" class="bg-neutral-600 text-white w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xs font-bold uppercase shrink-0">AD</span>
+                    <span id="adminNameDisplay" class="text-xs sm:text-sm hidden lg:inline max-w-[140px] truncate">Admin Account</span>
+                </div>
+                <button id="logoutBtn" class="border border-neutral-600 px-3 sm:px-4 py-1.5 rounded hover:bg-neutral-800 text-xs sm:text-sm transition shrink-0">Logout</button>
+            </div>
         </div>
     </nav>
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div class="mb-6">
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-red-600 flex items-center gap-2">Reported Posts</h2>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+        <div class="mb-5 sm:mb-6">
+            <h2 class="text-xl sm:text-3xl font-extrabold text-red-600">Reported Posts</h2>
             <p class="text-gray-500 text-xs sm:text-sm mt-1">Review items flagged by students as spam or inappropriate.</p>
         </div>
 
+        <!-- Cards grid: 1 column sa phone -->
         <div id="reportsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 pb-12">
             <p class="text-neutral-500 col-span-full"></p>
         </div>
     </main>
 
-    <!-- Modal for View Details (Same as admin.html) -->
+    <!-- View Details Modal -->
     <div id="detailsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-        <div class="bg-white rounded-xl p-6 max-w-lg w-full mx-auto shadow-xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-xl p-5 sm:p-6 max-w-lg w-full mx-auto shadow-xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
                 <h3 class="text-lg font-bold text-gray-900">Item Full Details</h3>
                 <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600 font-bold text-lg">&times;</button>
             </div>
-            <div id="detailsModalContent" class="space-y-3 text-sm text-gray-700"></div>
+            <div id="detailsModalContent" class="space-y-3 text-sm text-gray-700 break-words"></div>
             <div class="mt-6 flex justify-end">
                 <button onclick="closeDetailsModal()" class="px-4 py-2 bg-neutral-800 text-white text-sm font-bold rounded-lg hover:bg-black transition">Close</button>
             </div>
@@ -77,7 +82,7 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="admin-report.js"></script>
-       <script src="config.js"></script>
 </body>
 </html>
