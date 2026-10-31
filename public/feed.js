@@ -183,7 +183,7 @@ if (reportForm) {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/items', {
+            const response = await fetch(API_BASE + '/api/items', {
                 method: 'POST',
                 
             // TANGGALIN ANG HEADERS dahil kusa itong iseset ng FormData
@@ -225,7 +225,7 @@ if (reportForm) {
     // --- LOAD ITEMS (GET DATA FROM MONGODB) ---
     async function loadItems() {
         try {
-            const response = await fetch('http://localhost:3000/api/items');
+            const response = await fetch(API_BASE + '/api/items');
             allItems = await response.json(); 
             displayItems(allItems); // I-display lahat sa simula
         } catch (error) {
@@ -538,7 +538,7 @@ async function reportItem(itemId) {
     if (!confirmed) return;
 
     try {
-        const response = await fetch(`http://localhost:3000/api/items/${itemId}/report`, {
+        const response = await fetch(API_BASE + `/api/items/${itemId}/report`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

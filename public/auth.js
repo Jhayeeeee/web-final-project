@@ -28,7 +28,7 @@
             errorMessage.classList.add('hidden');
             
             try {
-                const response = await fetch('http://localhost:3000/api/register', {
+                const response = await fetch(API_BASE +'/api/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -77,7 +77,7 @@
 
             try {
                 // Ipinapadala sa backend ang data para i-verify sa database
-                const response = await fetch('http://localhost:3000/api/login', {
+                const response = await fetch(API_BASE + '/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

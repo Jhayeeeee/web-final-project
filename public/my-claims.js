@@ -29,7 +29,7 @@ if (logoutBtn) {
 // --- LOAD USER'S ITEMS ---
 async function loadMyItems() {
     try {
-        const response = await fetch('http://localhost:3000/api/items');
+        const response = await fetch(API_BASE + '/api/items');
         const allItems = await response.json(); 
 
         const myItems = allItems.filter(item => {
@@ -172,7 +172,7 @@ if(confirmSurrenderBtn) {
 
         try {
             const token = localStorage.getItem('token'); 
-            const response = await fetch(`http://localhost:3000/api/items/${itemToUpdateId}/status`, {
+            const response = await fetch(API_BASE + `/api/items/${itemToUpdateId}/status`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`http://localhost:3000/api/items/${itemToDeleteId}`, {
+                const response = await fetch(API_BASE + `/api/items/${itemToDeleteId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -288,7 +288,7 @@ function markMyItemResolved(itemId) {
 
         try {
             const token = localStorage.getItem('token'); 
-            const response = await fetch(`http://localhost:3000/api/items/${itemId}/status`, {
+            const response = await fetch(API_BASE + `/api/items/${itemId}/status`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',

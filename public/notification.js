@@ -58,7 +58,7 @@
 
     async function loadNotifications() {
         try {
-            const response = await fetch('http://localhost:3000/api/notifications', {
+            const response = await fetch(API_BASE + '/api/notifications', {
                 headers: authHeaders()
             });
             if (!response.ok) return; // Silent fail (e.g. expired token)
@@ -78,7 +78,7 @@
         if (!notif || notif.isRead) return;
 
         try {
-            const response = await fetch(`http://localhost:3000/api/notifications/${id}/read`, {
+            const response = await fetch(API_BASE + `/api/notifications/${id}/read`, {
                 method: 'PUT',
                 headers: authHeaders()
             });
@@ -95,7 +95,7 @@
 
     async function markAllAsRead() {
         try {
-            const response = await fetch('http://localhost:3000/api/notifications/read-all', {
+            const response = await fetch(API_BASE + '/api/notifications/read-all', {
                 method: 'PUT',
                 headers: authHeaders()
             });

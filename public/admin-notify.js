@@ -89,7 +89,7 @@
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3000/api/admin/notifications/broadcast', {
+            const response = await fetch(API_BASE + '/api/admin/notifications/broadcast', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

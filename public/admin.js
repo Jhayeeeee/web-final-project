@@ -39,7 +39,7 @@ let currentFilter = 'all';
 
 async function loadAdminInventory() {
     try {
-        const response = await fetch('http://localhost:3000/api/items');
+        const response = await fetch(API_BASE +'/api/items');
         allSystemItems = await response.json();
         updateDashboard();
     } catch (error) {
@@ -235,7 +235,7 @@ function markAsClaimed(itemId) {
         try {
             const token = localStorage.getItem('token'); 
 
-            const response = await fetch(`http://localhost:3000/api/items/${itemId}/status`, {
+            const response = await fetch(API_BASE + `/api/items/${itemId}/status`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -262,7 +262,7 @@ function deleteAdminItem(itemId) {
         try {
             const token = localStorage.getItem('token'); 
 
-            const response = await fetch(`http://localhost:3000/api/items/${itemId}`, { 
+            const response = await fetch(API_BASE + `/api/items/${itemId}`, { 
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}` 
@@ -284,7 +284,7 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
     try {
         const token = localStorage.getItem('token');
         
-        const response = await fetch('http://localhost:3000/api/items', {
+        const response = await fetch(API_BASE +'/api/items', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         

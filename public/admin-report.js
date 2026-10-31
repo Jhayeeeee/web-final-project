@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadReportedItems() {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3000/api/items', {
+        const response = await fetch( API_BASE + '/api/items', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -195,7 +195,7 @@ async function dismissReport(itemId) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/items/${itemId}/dismiss-report`, {
+        const response = await fetch( API_BASE + `/api/items/${itemId}/dismiss-report`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -229,7 +229,7 @@ async function deleteAdminItem(itemId) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/items/${itemId}`, {
+        const response = await fetch( API_BASE + `/api/items/${itemId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -263,7 +263,7 @@ async function toggleBanUser(userId, isCurrentlyBanned) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/users/${userId}/ban`, {
+        const response = await fetch( API_BASE + `/api/users/${userId}/ban`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}` }
         });
