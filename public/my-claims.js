@@ -68,7 +68,7 @@ function displayMyItems(itemsToDisplay) {
         if (item.status === 'claimed') badgeStyle = 'bg-neutral-600 text-white';
         
         const imageContent = item.imageURL 
-            ? `<img src="${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">` 
+            ? `<img src="${API_BASE}${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">`
             : `<p class="text-neutral-400 text-sm">[ No Image Yet ]</p>`;
 
         // Base Delete Button
@@ -308,3 +308,36 @@ function markMyItemResolved(itemId) {
         }
     });
 }
+
+// --- MOBILE NAV (hamburger, pangalan, mobile logout) ---
+(function () {
+    // Hamburger toggle
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileNavMenu');
+    if (menuBtn && mobileMenu) {
+        menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+    }
+
+    // Pangalan at initial ng user sa navbar (desktop at mobile)
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.fullName) {
+        const initial = user.fullName.charAt(0).toUpperCase();
+        const navName = document.getElementById('navUserName');
+        const mobileName = document.getElementById('mobileNavUserName');
+        if (navName) navName.textContent = user.fullName;
+        if (mobileName) mobileName.textContent = user.fullName;
+        document.querySelectorAll('.rounded-full.bg-neutral-700').forEach(el => {
+            el.textContent = initial;
+        });
+    }
+
+    // Mobile logout
+    const logoutMobile = document.getElementById('logoutBtnMobile');
+    if (logoutMobile) {
+        logoutMobile.addEventListener('click', () => {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        });
+    }
+})();

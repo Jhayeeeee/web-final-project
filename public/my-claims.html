@@ -8,57 +8,75 @@
     </head>
     <body class="bg-neutral-100 min-h-screen font-sans">
 
-       <!-- NAVBAR -->
-<nav class="bg-neutral-900 text-white p-4 shadow-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-        
-        <!-- Left Side: Logo & Main Links -->
-        <div class="flex items-center space-x-6">
-            <h1 class="text-xl font-bold tracking-wider text-white">Lost & Found Portal</h1>
+  <!-- NAVBAR -->
+<nav class="bg-neutral-900 text-white p-3 sm:p-4 shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto flex justify-between items-center gap-2">
+
+        <!-- Left: Logo & desktop links -->
+        <div class="flex items-center gap-6 min-w-0">
+            <h1 class="text-base sm:text-xl font-bold tracking-wider text-white truncate">Lost & Found Portal</h1>
             <div class="hidden md:flex space-x-4">
                 <a href="feed.html" class="text-neutral-400 hover:text-white transition pb-1">Feed</a>
                 <a href="my-claims.html" class="text-white border-b-2 border-white pb-1 font-semibold">My Claims</a>
             </div>
         </div>
 
-        <!-- Right Side: Profile, Settings & Logout -->
-        <div class="flex items-center space-x-3 sm:space-x-4">
+        <!-- Right side -->
+        <div class="flex items-center gap-2 sm:gap-4 shrink-0">
             <div class="text-right hidden sm:block">
                 <p class="text-sm font-semibold" id="navUserName">Student User</p>
                 <p class="text-[10px] text-neutral-400">University Account</p>
             </div>
-            
+
             <div class="h-8 w-8 rounded-full bg-neutral-700 flex items-center justify-center font-bold text-sm">
                 U
             </div>
 
-            <!-- Maliit na Settings Button (Gear Icon) -->
-            <a href="profile.html" class="text-neutral-400 hover:text-white transition p-1" title="Account Settings">
+            <!-- Settings: nakatago sa mobile, nasa mobile menu -->
+            <a href="profile.html" class="hidden sm:block text-neutral-400 hover:text-white transition p-1" title="Account Settings">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
             </a>
 
-            <!-- Logout Button -->
-            <button id="logoutBtn" class="text-xs border border-neutral-600 px-3 py-1.5 rounded-md text-neutral-300 hover:text-white hover:bg-neutral-800 transition">
+            <!-- Logout: desktop lang -->
+            <button id="logoutBtn" class="hidden md:block text-xs border border-neutral-600 px-3 py-1.5 rounded-md text-neutral-300 hover:text-white hover:bg-neutral-800 transition">
                 Logout
+            </button>
+
+            <!-- Hamburger: mobile lang -->
+            <button id="mobileMenuBtn" class="md:hidden text-neutral-300 hover:text-white p-1" aria-label="Menu">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
             </button>
         </div>
     </div>
-</nav>
 
+    <!-- Mobile menu -->
+    <div id="mobileNavMenu" class="hidden md:hidden mt-3 pt-3 border-t border-neutral-700 space-y-1">
+        <div class="flex items-center gap-3 px-2 py-2">
+            <div class="h-8 w-8 rounded-full bg-neutral-700 flex items-center justify-center font-bold text-sm shrink-0">U</div>
+            <div>
+                <p class="text-sm font-semibold" id="mobileNavUserName">Student User</p>
+                <p class="text-[10px] text-neutral-400">University Account</p>
+            </div>
+        </div>
+        <a href="feed.html" class="block px-2 py-2 rounded-md text-neutral-300 hover:bg-neutral-800">Feed</a>
+        <a href="my-claims.html" class="block px-2 py-2 rounded-md font-semibold bg-neutral-800">My Claims</a>
+        <a href="profile.html" class="block px-2 py-2 rounded-md text-neutral-300 hover:bg-neutral-800">Account Settings</a>
+        <button id="logoutBtnMobile" class="block w-full text-left px-2 py-2 rounded-md text-red-400 hover:bg-neutral-800">Logout</button>
+    </div>
+</nav>
         <!-- MAIN CONTENT -->
         <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-            <div class="mb-6 border-b border-neutral-300 pb-4">
-                <h2 class="text-2xl font-bold text-neutral-800">My Reports & Claims</h2>
-                <p class="text-sm text-neutral-500 mt-1">View and manage your reported items here.</p>
-            </div>
+         <div class="mb-6 border-b border-neutral-300 pb-4">
+    <h2 class="text-xl sm:text-2xl font-bold text-neutral-800">My Reports & Claims</h2>
+    <p class="text-sm text-neutral-500 mt-1">View and manage your reported items here.</p>
+</div>
 
-            <!-- ITEMS GRID -->
-            <div id="myItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Dito papasok ang items ng user galing sa JavaScript -->
-            </div>
+<div id="myItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
 
             <!-- Delete Confirmation Modal (Nakatago by default) -->
         <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
@@ -101,7 +119,7 @@
         
         </main>
 
+        <script src="config.js"></script>
         <script src="my-claims.js"></script>
-           <script src="config.js"></script>
     </body>
     </html>
