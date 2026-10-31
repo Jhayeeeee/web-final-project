@@ -25,13 +25,7 @@ cloudinary.config({
     secure: true
 });
 
-console.log("Cloudinary configured:", Boolean(
-    process.env.CLOUDINARY_CLOUD_NAME &&
-    process.env.CLOUDINARY_API_KEY &&
-    process.env.CLOUDINARY_API_SECRET
-));
-
-// Hindi na sa disk sinisave ang upload. Nasa memory muna, tapos diretso sa Cloudinary.
+// --- FILE UPLOAD (nasa memory muna, diretso sa Cloudinary) ---
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
@@ -41,7 +35,6 @@ const upload = multer({
     }
 });
 
-// Middleware para mahuli ang error ng upload at maibalik bilang JSON
 const uploadSingle = (req, res, next) => {
     upload.single("image")(req, res, (err) => {
         if (err) return res.status(400).json({ message: err.message });
@@ -70,7 +63,6 @@ mongoose
     .then(() => console.log("Connected to MongoDB, database:", mongoose.connection.name))
     .catch((err) => console.error("Failed to connect to MongoDB:", err));
 
-    
 // --- MIDDLEWARE: check ng token ---
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -214,12 +206,6 @@ app.post("/api/items", uploadSingle, async (req, res) => {
     try {
         const { itemName, description, category, status, location, incidentDate, reportedBy, latitude, longitude } = req.body;
 
-        let imageURL = null;
-        if (req.file) {
-            const result = await uploadToCloudinary(req.file.buffer);
-            imageURL = result.secure_url; // buong https URL, hindi na /uploads/...
-        }
-
         const newItem = new Item({
             itemName,
             description,
@@ -228,10 +214,17 @@ app.post("/api/items", uploadSingle, async (req, res) => {
             location,
             incidentDate,
             reportedBy,
-            latitude,
-            longitude,
-            imageURL
+            latitude: latitude || null,
+            longitude: longitude || null
         });
+
+        // I-validate muna bago mag-upload, para walang naiwang larawan sa Cloudinary kung mali ang data
+        await newItem.validate();
+
+        if (req.file) {
+            const result = await uploadToCloudinary(req.file.buffer);
+            newItem.imageURL = result.secure_url;
+        }
 
         await newItem.save();
 
@@ -241,7 +234,10 @@ app.post("/api/items", uploadSingle, async (req, res) => {
         });
     } catch (error) {
         console.error("Error reporting item:", error);
-        res.status(500).json({ message: "Server error while saving the item." });
+        res.status(500).json({
+            message: "Server error while saving the item.",
+            detail: error.message
+        });
     }
 });
 
@@ -347,12 +343,9 @@ app.post("/api/items/:id/report", async (req, res) => {
             message: "Item reported successfully",
             reportCount: item.reportCount
         });
-        } catch (error) {
-        console.error("Error reporting item:", error);
-        res.status(500).json({
-            message: "Server error while saving the item.",
-            detail: error.message
-        });
+    } catch (error) {
+        console.error("Report Error:", error);
+        res.status(500).json({ message: "Server error while reporting item." });
     }
 });
 
@@ -492,29 +485,9 @@ app.post("/api/admin/notifications/broadcast", verifyToken, async (req, res) => 
     }
 });
 
-// --- DIAGNOSTIC: tingnan kung tama ang Cloudinary credentials ---
-app.get("/api/test-cloudinary", async (req, res) => {
-    try {
-        const result = await cloudinary.api.ping();
-        res.json({ ok: true, result });
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            message: error.message,
-            configured: {
-                cloud_name: Boolean(process.env.CLOUDINARY_CLOUD_NAME),
-                api_key: Boolean(process.env.CLOUDINARY_API_KEY),
-                api_secret: Boolean(process.env.CLOUDINARY_API_SECRET)
-            }
-        });
-    }
-});
-
-
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
-module.exports = app;
+module.exports = app;   
