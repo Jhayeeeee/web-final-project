@@ -1,4 +1,11 @@
-﻿/**
+﻿// --- HTML ESCAPE (para sa text na galing sa user) ---
+function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+/**
  * Shows a styled toast/alert modal.
  * @param {'success'|'error'|'warning'|'info'} type
  * @param {string} title
@@ -96,6 +103,17 @@ const reportModal = document.getElementById('reportModal');
 const reportForm = document.getElementById('reportForm');
 const reportMessage = document.getElementById('reportMessage');
 const buildingSelect = document.getElementById('campusBuilding');
+const campusRoom = document.getElementById('campusRoom');
+const getLocationBtn = document.getElementById('getLocationBtn');
+const geoStatus = document.getElementById('geoStatus');
+const latInput = document.getElementById('latitude');
+const lngInput = document.getElementById('longitude');
+
+// I-reset ang Area/Room dropdown sa default na estado
+function resetRoomDropdown() {
+    campusRoom.innerHTML = '<option value="">Select Area/Room</option>';
+    campusRoom.disabled = true;
+}
 
 const handleOpenReport = (e) => {
     if (e) e.preventDefault();
@@ -108,29 +126,28 @@ const handleOpenReport = (e) => {
 if (openReportBtn) openReportBtn.addEventListener('click', handleOpenReport);
 if (openReportBtnMobile) openReportBtnMobile.addEventListener('click', handleOpenReport);
 
-// Itago ang modal
+// Itago ang modal at linisin ang form
 if (closeReportBtn) {
     closeReportBtn.addEventListener('click', () => {
         reportModal.classList.add('hidden');
         reportForm.reset();
+        resetRoomDropdown();
         reportMessage.classList.add('hidden');
 
         // I-clear ang lumang validation error ng building dropdown
         buildingSelect.setCustomValidity('');
 
         // I-reset ang Location UI at inputs
-        const resetGeoStatus = document.getElementById('geoStatus');
-        if (resetGeoStatus) {
-            resetGeoStatus.textContent = '';
-            resetGeoStatus.classList.add('hidden');
+        if (geoStatus) {
+            geoStatus.textContent = '';
+            geoStatus.classList.add('hidden');
         }
-        document.getElementById('latitude').value = '';
-        document.getElementById('longitude').value = '';
+        latInput.value = '';
+        lngInput.value = '';
 
         // Ibalik sa itim ang button kung naging green ito
-        const locBtn = document.getElementById('getLocationBtn');
-        if (locBtn && locBtn.classList.contains('bg-green-700')) {
-            locBtn.classList.replace('bg-green-700', 'bg-neutral-800');
+        if (getLocationBtn && getLocationBtn.classList.contains('bg-green-700')) {
+            getLocationBtn.classList.replace('bg-green-700', 'bg-neutral-800');
         }
     });
 }
@@ -141,7 +158,7 @@ if (reportForm) {
         e.preventDefault();
 
         // --- VALIDATION: kailangan ng GPS o building ---
-        const latValue = document.getElementById('latitude').value;
+        const latValue = latInput.value;
 
         if (!latValue && buildingSelect.value === "") {
             buildingSelect.setCustomValidity("Please choose a building. If it's not among the choices, select 'other'");
@@ -160,7 +177,7 @@ if (reportForm) {
         }
 
         const building = buildingSelect.value;
-        const room = document.getElementById('campusRoom').value;
+        const room = campusRoom.value;
         const combinedLocation = (building && room) ? `${building} - ${room}` : (building || 'GPS Location Tagged');
 
         // FormData ang gamit para sa file upload
@@ -172,7 +189,7 @@ if (reportForm) {
         formData.append('location', combinedLocation);
         formData.append('incidentDate', document.getElementById('itemDate').value);
         formData.append('latitude', latValue || '');
-        formData.append('longitude', document.getElementById('longitude').value || '');
+        formData.append('longitude', lngInput.value || '');
         formData.append('reportedBy', storedUserData.id);
 
         const imageFile = document.getElementById('itemImage').files[0];
@@ -196,6 +213,7 @@ if (reportForm) {
                 setTimeout(() => {
                     reportModal.classList.add('hidden');
                     reportForm.reset();
+                    resetRoomDropdown();
                     reportMessage.classList.add('hidden');
                     loadItems();
                 }, 2000);
@@ -219,15 +237,16 @@ const categoryFilter = document.getElementById('categoryFilter');
 const statusFilters = document.getElementsByName('status');
 
 
-// --- LOAD ITEMS (GET DATA FROM MONGODB) ---
 // --- LOAD ITEMS (may auto-retry para sa Render cold start) ---
+// Hiwalay ang fetch at render: ang error sa pag-display ay hindi na mapagkakamalang connection error
 async function loadItems(retries = 3) {
     const grid = document.getElementById('itemsGrid');
+    let data;
+
     try {
         const response = await fetch(API_BASE + '/api/items');
         if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-        allItems = await response.json();
-        applyFilters();
+        data = await response.json();
     } catch (error) {
         console.error('Error loading items:', error);
 
@@ -242,8 +261,13 @@ async function loadItems(retries = 3) {
                 <p class="text-red-400 mb-3">Failed to load items. Cannot connect to server.</p>
                 <button onclick="loadItems(3)" class="px-4 py-2 bg-neutral-800 text-white text-sm font-semibold rounded-md hover:bg-black transition">Retry</button>
             </div>`;
+        return;
     }
+
+    allItems = data;
+    applyFilters();
 }
+
 // --- DISPLAY ITEMS ---
 function displayItems(itemsToDisplay) {
     const itemsGrid = document.getElementById('itemsGrid');
@@ -290,9 +314,10 @@ function displayItems(itemsToDisplay) {
             `;
         }
 
-        // Image: kailangang idugtong ang API_BASE dahil /uploads/... lang ang nasa database
+        // Image: idinadugtong ang API_BASE dahil /uploads/... lang ang nasa database
+        // object-contain para buo ang larawan; nakatago ang img kung hindi ma-load
         const imageContent = item.imageURL
-            ? `<img src="${API_BASE}${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">`
+            ? `<img src="${API_BASE}${item.imageURL}" alt="${escapeHtml(item.itemName)}" class="w-full h-full object-contain" onerror="this.style.display='none'">`
             : `<p class="text-neutral-400 text-sm">[ No Image Yet ]</p>`;
 
         const cardHTML = `
@@ -302,9 +327,9 @@ function displayItems(itemsToDisplay) {
                     ${imageContent}
                 </div>
                 <div class="p-4 sm:p-5 flex-grow flex flex-col">
-                    <h3 class="text-sm sm:text-base font-bold text-neutral-900 mb-1.5 truncate" title="${item.itemName}">${item.itemName}</h3>
-                    <p class="text-xs sm:text-sm text-neutral-500 mb-1">Date: ${item.incidentDate || 'No date specified'}</p>
-                    <p class="text-xs sm:text-sm text-neutral-500 mb-2 line-clamp-2">Location: ${item.location}</p>
+                    <h3 class="text-sm sm:text-base font-bold text-neutral-900 mb-1.5 truncate" title="${escapeHtml(item.itemName)}">${escapeHtml(item.itemName)}</h3>
+                    <p class="text-xs sm:text-sm text-neutral-500 mb-1">Date: ${escapeHtml(item.incidentDate || 'No date specified')}</p>
+                    <p class="text-xs sm:text-sm text-neutral-500 mb-2 line-clamp-2">Location: ${escapeHtml(item.location)}</p>
 
                     ${reportButtonHTML}
 
@@ -329,7 +354,8 @@ function applyFilters() {
     });
 
     const filteredItems = allItems.filter(item => {
-        const matchesSearch = item.itemName.toLowerCase().includes(searchTerm) ||
+        // Null-safe: may item na walang itemName o description
+        const matchesSearch = (item.itemName || '').toLowerCase().includes(searchTerm) ||
                               (item.description || '').toLowerCase().includes(searchTerm);
 
         const matchesCategory = selectedCategory === 'All Categories' || item.category === selectedCategory;
@@ -359,16 +385,16 @@ function openItemDetails(itemId) {
 
     const imageContainer = document.getElementById('detailImageContainer');
     if (item.imageURL) {
-        imageContainer.innerHTML = `<img src="${API_BASE}${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">`;
+        imageContainer.innerHTML = `<img src="${API_BASE}${item.imageURL}" alt="${escapeHtml(item.itemName)}" class="w-full h-full object-contain" onerror="this.style.display='none'">`;
     } else {
         imageContainer.innerHTML = `<p class="text-neutral-400">[ No Image Yet ]</p>`;
     }
 
-    // Ilagay ang text sa modal
-    document.getElementById('detailName').textContent = item.itemName;
-    document.getElementById('detailCategory').textContent = item.category;
-    document.getElementById('detailDesc').textContent = item.description;
-    document.getElementById('detailLocation').textContent = item.location;
+    // Ilagay ang text sa modal (textContent na kaya ligtas na)
+    document.getElementById('detailName').textContent = item.itemName || 'N/A';
+    document.getElementById('detailCategory').textContent = item.category || 'N/A';
+    document.getElementById('detailDesc').textContent = item.description || 'No description provided.';
+    document.getElementById('detailLocation').textContent = item.location || 'N/A';
 
     // Pangalan ng nag-post
     const posterNameElement = document.getElementById('detailPosterName');
@@ -381,7 +407,7 @@ function openItemDetails(itemId) {
     // --- GOOGLE MAPS LINK ---
     const mapLink = document.getElementById('detailMapLink');
     if (item.latitude && item.longitude) {
-        mapLink.href = `https://www.google.com/maps?q=${item.latitude},${item.longitude}`;
+        mapLink.href = `https://www.google.com/maps?q=${encodeURIComponent(item.latitude)},${encodeURIComponent(item.longitude)}`;
         mapLink.classList.remove('hidden');
     } else {
         mapLink.classList.add('hidden');
@@ -418,7 +444,7 @@ function openItemDetails(itemId) {
         } else {
             const subject = encodeURIComponent(`University of Manila Lost & Found: Regarding your post about ${item.itemName}`);
             const body = encodeURIComponent(`Hello!\n\nI saw your post on the University Lost & Found Portal regarding the ${item.itemName}.\n\n[ Type your message here... ]`);
-            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contactEmail}&su=${subject}&body=${body}`;
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contactEmail)}&su=${subject}&body=${body}`;
             window.open(gmailUrl, '_blank');
         }
     });
@@ -431,12 +457,6 @@ function closeItemDetails() {
 }
 
 // --- GEOLOCATION AT CASCADING DROPDOWN LOGIC ---
-const getLocationBtn = document.getElementById('getLocationBtn');
-const geoStatus = document.getElementById('geoStatus');
-const campusRoom = document.getElementById('campusRoom');
-const latInput = document.getElementById('latitude');
-const lngInput = document.getElementById('longitude');
-
 const plmRooms = {
     "Gusaling Corazon Aquino": ["GCA 101", "GCA 202", "GCA 303", "Canteen", "Restroom"],
     "Gusaling Villegas": ["GV 101", "GV 204", "GV 305", "Restroom"],
@@ -446,7 +466,7 @@ const plmRooms = {
 
 if (buildingSelect) {
     buildingSelect.addEventListener('change', function () {
-        // FIX: i-clear agad ang lumang error pagkapili ng building
+        // i-clear agad ang lumang error pagkapili ng building
         this.setCustomValidity('');
 
         const selectedBuilding = this.value;
@@ -485,7 +505,7 @@ if (getLocationBtn) {
                 geoStatus.className = "text-xs text-green-600 font-semibold mb-3 text-center block";
                 getLocationBtn.classList.replace('bg-neutral-800', 'bg-green-700');
 
-                // FIX: may GPS na, kaya hindi na kailangan ng building error
+                // may GPS na, kaya hindi na kailangan ng building error
                 buildingSelect.setCustomValidity('');
             },
             (error) => {

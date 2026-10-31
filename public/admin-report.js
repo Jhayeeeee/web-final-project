@@ -121,7 +121,7 @@ function displayReportedItems() {
 
         // Image o Placeholder
         const imageContent = item.imageURL 
-            ? `<img src="${item.imageURL}" class="w-full h-full object-cover">` 
+        ? `<img src="${API_BASE}${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">`
             : `<div class="w-full h-full bg-[#2a2a2a] flex items-center justify-center text-neutral-400"><span class="text-sm">No image provided</span></div>`;
 
         // Badge color based on status
@@ -299,7 +299,7 @@ function openDetailsModal(itemId) {
 
     document.getElementById('detailsModalContent').innerHTML = `
         <div class="space-y-3">
-            ${item.imageURL ? `<img src="${item.imageURL}" class="w-full h-48 object-cover rounded-lg mb-3 border">` : ''}
+            ${item.imageURL ? `<img src="${API_BASE}${item.imageURL}" class="w-full h-48 object-cover rounded-lg mb-3 border">` : ''}
             <p><strong>Item Name:</strong> ${item.itemName}</p>
             <p><strong>Posted By:</strong> ${posterName} <span class="text-xs text-gray-400 bg-gray-100 px-1 py-0.5 rounded">(Author)</span></p>
             <p><strong>Description:</strong> ${item.description || 'No description provided.'}</p>
