@@ -95,3 +95,33 @@ if (changePasswordForm) {
         }
     });
 }
+
+// --- MOBILE NAV (hamburger, pangalan, mobile logout) ---
+(function () {
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileNavMenu');
+    if (menuBtn && mobileMenu) {
+        menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+    }
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.fullName) {
+        const initial = user.fullName.charAt(0).toUpperCase();
+        const navName = document.getElementById('navUserName');
+        const mobileName = document.getElementById('mobileNavUserName');
+        if (navName) navName.textContent = user.fullName;
+        if (mobileName) mobileName.textContent = user.fullName;
+        document.querySelectorAll('.rounded-full.bg-neutral-700').forEach(el => {
+            el.textContent = initial;
+        });
+    }
+
+    const logoutMobile = document.getElementById('logoutBtnMobile');
+    if (logoutMobile) {
+        logoutMobile.addEventListener('click', () => {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        });
+    }
+})();

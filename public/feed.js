@@ -232,7 +232,7 @@ async function loadItems(retries = 3) {
         console.error('Error loading items:', error);
 
         if (retries > 0) {
-            grid.innerHTML = '<p class="text-neutral-500 col-span-full text-center py-8">Connecting to server... Maaaring tumagal ng hanggang 60 segundo.</p>';
+            grid.innerHTML = '<p class="text-neutral-500 col-span-full text-center py-8">Connecting to server...</p>';
             await new Promise(resolve => setTimeout(resolve, 5000));
             return loadItems(retries - 1);
         }

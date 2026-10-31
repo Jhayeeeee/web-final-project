@@ -122,7 +122,7 @@ function displayAdminItems(items) {
 
     items.forEach(item => {
         const imageContent = item.imageURL 
-            ? `<img src="${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">` 
+            ? `<img src="${API_BASE}${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">`
             : `<div class="w-full h-full bg-[#3a3a3a] flex flex-col items-center justify-center text-neutral-400" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);">
                 <span class="text-xs font-semibold tracking-wide">No image provided</span>
                </div>`;
@@ -337,7 +337,7 @@ function openDetailsModal(itemId) {
 
     detailsContent.innerHTML = `
         <div class="space-y-2">
-            ${item.imageURL ? `<img src="${item.imageURL}" class="w-full h-48 object-cover rounded-lg mb-3 border">` : ''}
+            ${item.imageURL ? `<img src="${API_BASE}${item.imageURL}" class="w-full h-48 object-cover rounded-lg mb-3 border">` : ''}
             <p><strong>Item Name:</strong> ${item.itemName || 'N/A'}</p>
             <p><strong>Description:</strong> ${item.description || 'No description provided.'}</p>
             <p><strong>Category:</strong> ${item.category || 'N/A'}</p>
