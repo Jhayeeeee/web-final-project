@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set admin name dynamically
     if (storedUser && storedUser.fullName) {
         if(adminNameDisplay) adminNameDisplay.textContent = storedUser.fullName;
-        if(adminInitials) adminInitials.textContent = storedUser.fullName.charAt(0);
+        if(adminInitials) adminInitials.textContent = storedUser.fullName.charAt(0).toUpperCase();
     }
     
     // Logout button functionality
@@ -128,35 +128,30 @@ function displayAdminItems(items) {
                </div>`;
 
         let badgeStyle = 'bg-neutral-600 text-white';
-     // 1. Dito nakasalalay ang status buttons mo (Lost, Found, Surrendered, Claimed)
         let claimButtonHTML = '';
 
         if (item.status === 'lost') {
             badgeStyle = 'bg-red-600 text-white';
-            claimButtonHTML = `<button disabled class="flex-grow py-2 bg-red-50 text-red-300 border border-red-100 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Still Missing</button>`;
+            claimButtonHTML = `<button disabled class="w-full py-2 bg-red-50 text-red-300 border border-red-100 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Still Missing</button>`;
         } else if (item.status === 'found') {
             badgeStyle = 'bg-green-600 text-white';
-            claimButtonHTML = `<button onclick="markAsClaimed('${item._id}')" class="flex-grow py-2 bg-black hover:bg-gray-800 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1">✓ Mark claimed</button>`;
+            claimButtonHTML = `<button onclick="markAsClaimed('${item._id}')" class="w-full py-2 bg-black hover:bg-gray-800 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1">✓ Mark claimed</button>`;
         } else if (item.status === 'surrendered') {
             badgeStyle = 'bg-orange-500 text-white';
-            claimButtonHTML = `<button onclick="markAsClaimed('${item._id}')" class="flex-grow py-2 bg-black hover:bg-gray-800 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1">✓ Mark claimed</button>`;
+            claimButtonHTML = `<button onclick="markAsClaimed('${item._id}')" class="w-full py-2 bg-black hover:bg-gray-800 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1">✓ Mark claimed</button>`;
         } else if (item.status === 'claimed') {
             badgeStyle = 'bg-green-600 text-white';
-            claimButtonHTML = `<button disabled class="flex-grow py-2 bg-neutral-200 text-neutral-500 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Already Claimed</button>`;
+            claimButtonHTML = `<button disabled class="w-full py-2 bg-neutral-200 text-neutral-500 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Already Claimed</button>`;
         }
 
         const displayId = item._id.substring(item._id.length - 4);
 
-    
-      // Kondisyon para sa Delete Button
         let deleteButtonHTML = '';
         if (item.status === 'lost') {
-            // Disabled kapag missing pa
             deleteButtonHTML = `<button disabled class="px-3 py-2 bg-neutral-100 text-neutral-300 rounded-lg cursor-not-allowed">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>`;
         } else {
-            // Active kapag found/surrendered/claimed
             deleteButtonHTML = `<button onclick="deleteAdminItem('${item._id}')" class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>`;
@@ -189,10 +184,13 @@ function displayAdminItems(items) {
                         </p>
                     </div>
 
-                   <!-- 3. Dito nakalagay ang mga buttons sa ibaba ng card -->
-                    <div class="mt-auto flex gap-2">
-                   <button onclick="openDetailsModal('${item._id}')" class="px-3 py-2 bg-neutral-800 hover:bg-black text-white rounded-lg text-xs font-bold transition flex items-center justify-center">View</button>
-                        ${deleteButtonHTML}
+                   <!-- DITO IDINAGDAG ANG CLAIM BUTTON -->
+                    <div class="mt-auto flex flex-col gap-2">
+                        ${claimButtonHTML}
+                        <div class="flex gap-2">
+                            <button onclick="openDetailsModal('${item._id}')" class="flex-1 px-3 py-2 bg-neutral-800 hover:bg-black text-white rounded-lg text-xs font-bold transition flex items-center justify-center">View</button>
+                            ${deleteButtonHTML}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -200,8 +198,6 @@ function displayAdminItems(items) {
         adminInventoryGrid.innerHTML += cardHTML;
     });
 }
-
-
 
 function showCustomModal(title, message, isConfirm = false, callback = null) {
     const modal = document.getElementById('customModal');
@@ -237,13 +233,13 @@ function markAsClaimed(itemId) {
         if (!confirmed) return;
         
         try {
-            const token = localStorage.getItem('token'); // 🟢 Kukunin ang token
+            const token = localStorage.getItem('token'); 
 
             const response = await fetch(`http://localhost:3000/api/items/${itemId}/status`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // 🟢 Ipapasa ang token sa server
+                    'Authorization': `Bearer ${token}` 
                 },
                 body: JSON.stringify({ status: 'claimed' })
             });
@@ -264,12 +260,12 @@ function deleteAdminItem(itemId) {
         if (!confirmed) return; 
         
         try {
-            const token = localStorage.getItem('token'); // 🟢 Kukunin ang token
+            const token = localStorage.getItem('token'); 
 
             const response = await fetch(`http://localhost:3000/api/items/${itemId}`, { 
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}` // 🟢 Ipapasa ang token sa server
+                    'Authorization': `Bearer ${token}` 
                 }
             });
 
@@ -288,7 +284,6 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
     try {
         const token = localStorage.getItem('token');
         
-        // 🟢 Kunin ang lahat ng items mula sa backend
         const response = await fetch('http://localhost:3000/api/items', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -296,21 +291,14 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
         if (!response.ok) throw new Error("Failed to fetch data");
         const items = await response.json();
 
-        // 🟢 I-setup ang headers ng Excel/CSV
         let csvContent = "Item ID,Item Name,Category,Status,Reported By,Date,Location\n";
 
-        // 🟢 Idinagdag ang 'index' para mabilang kung pang-ilan ang item
         items.forEach((item, index) => {
-            
-            // 🟢 Gumawa ng format na ITEM001, ITEM002, etc. (String at padStart)
             const customId = "ITEM" + String(index + 1).padStart(3, '0');
-
             const rawDate = item.createdAt || item.date || item.dateReported;
             const date = rawDate ? new Date(rawDate).toLocaleDateString() : 'N/A';
-
             const itemName = item.name || item.itemName || item.title || 'N/A';
             const category = item.category || item.type || 'N/A';
-
             const reportedBy = item.reportedBy?.email || item.reportedBy?.name || (typeof item.reportedBy === 'string' ? item.reportedBy : 'N/A');
 
            let locationData = item.location || 'N/A';
@@ -318,12 +306,10 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
            locationData = `=HYPERLINK(""https://www.google.com/maps?q=${item.latitude},${item.longitude}"", ""View Map"")`;
             }
 
-            // 🟢 Pinalitan ang ${item._id} ng ${customId}
             const row = `"${customId}","${itemName}","${category}","${item.status}","${reportedBy}","${date}","${locationData}"`;
             csvContent += row + "\n";
         });
 
-        // 🟢 I-convert ang text papuntang mada-download na file
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
@@ -341,9 +327,6 @@ document.getElementById('exportReportBtn').addEventListener('click', async () =>
     }
 });
 
-
-
-// Function para buksan ang View Details modal
 function openDetailsModal(itemId) {
     const item = allSystemItems.find(i => i._id === itemId);
     if (!item) return;
@@ -359,7 +342,6 @@ function openDetailsModal(itemId) {
             <p><strong>Description:</strong> ${item.description || 'No description provided.'}</p>
             <p><strong>Category:</strong> ${item.category || 'N/A'}</p>
             <p><strong>Status:</strong> <span class="uppercase font-semibold px-2 py-0.5 bg-neutral-100 rounded text-xs">${item.status}</span></p>
-            <p><strong>Approval Status:</strong> <span class="uppercase font-semibold px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs">${item.approvalStatus || 'pending'}</span></p>
             <p><strong>Reported By:</strong> ${item.reportedBy?.email || item.reportedBy || 'Unknown'}</p>
             <p><strong>Date Reported:</strong> ${dateFormatted}</p>
             <p><strong>Incident Date:</strong> ${item.incidentDate || 'N/A'}</p>
@@ -371,7 +353,6 @@ function openDetailsModal(itemId) {
     document.getElementById('detailsModal').classList.remove('hidden');
 }
 
-// Function para isara ang View Details modal
 function closeDetailsModal() {
     document.getElementById('detailsModal').classList.add('hidden');
 }

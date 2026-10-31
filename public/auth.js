@@ -63,7 +63,7 @@
         });
     }
 
-    // --- LOGIN LOGIC ---
+   // --- LOGIN LOGIC ---
     const loginForm = document.getElementById('loginForm');
 
     if (loginForm) {
@@ -88,19 +88,23 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                loginErrorMessage.classList.add('hidden');
-                
-                localStorage.setItem('user', JSON.stringify(data.user));
-                localStorage.setItem('token', data.token); 
+                    loginErrorMessage.classList.add('hidden');
+                    
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('token', data.token); 
 
-                if (data.user.role === 'admin') {
-                    window.location.href = 'admin.html';
+                    if (data.user.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'feed.html';
+                    }
                 } else {
-                    window.location.href = 'feed.html';
+                    //  Dito sasaluin kapag mali ang password o email
+                    loginErrorMessage.textContent = data.message || "Invalid email or password.";
+                    loginErrorMessage.classList.remove('hidden');
                 }
-            }
             } catch (error) {
-                // Kapag nakapatay ang Node.js server
+                // No connection on node server js      
                 console.error("Login Connection Error:", error);
                 loginErrorMessage.textContent = "Cannot connect to server. Please try again.";
                 loginErrorMessage.classList.remove('hidden');
