@@ -7,62 +7,66 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-neutral-200 bg-cover bg-center bg-no-repeat h-screen flex items-center justify-end pr-12 md:pr-24">
-    <div class="w-full max-w-md p-8 bg-white/20 backdrop-blur-md border-white/30 rounded-2xl shadow-2xl">
-        
+<body class="bg-neutral-200 bg-cover bg-center bg-no-repeat min-h-screen flex items-center justify-center md:justify-end px-4 py-8 md:pr-24">
 
-        <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-gray-900">Lost & Found Portal</h2>
+    <div class="w-full max-w-md p-6 sm:p-8 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl">
+
+        <div class="text-center mb-6 sm:mb-8">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Lost & Found Portal</h2>
             <p class="text-gray-800 mt-2 text-sm">Use your university email to continue</p>
         </div>
-        
-        <form id="loginForm" class="space-y-6">
+
+        <form id="loginForm" class="space-y-5 sm:space-y-6">
             <div>
                 <label for="email" class="block text-sm font-semibold text-gray-900">University Email</label>
-                <input type="email" id="email" name="email" placeholder="name@university.edu.ph" required 
-                        class="mt-1 block w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white placeholder-gray-500 transition duration-200">
+                <input type="email" id="email" name="email" placeholder="name@university.edu.ph" required
+                        class="mt-1 block w-full px-4 py-3 text-base sm:text-sm bg-white/70 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white placeholder-gray-500 transition duration-200">
             </div>
-            
+
             <div>
                 <label for="password" class="block text-sm font-semibold text-gray-900">Password</label>
-                <input type="password" id="password" name="password" required 
-                        class="mt-1 block w-full px-4 py-3 bg-white/70 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white placeholder-gray-500 transition duration-200">
+                <input type="password" id="password" name="password" required
+                        class="mt-1 block w-full px-4 py-3 text-base sm:text-sm bg-white/70 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white placeholder-gray-500 transition duration-200">
             </div>
 
             <div class="text-center">
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
                     Login
                 </button>
-                <div class="flex items-center my-6">
+
+                <div class="flex items-center my-5 sm:my-6">
                     <div class="flex-grow border-t border-gray-900/50"></div>
                     <span class="mx-4 text-sm font-bold text-gray-800">OR</span>
                     <div class="flex-grow border-t border-gray-900/50"></div>
                 </div>
+
                 <!-- Microsoft Login Button -->
-        <button type="button" 
-                class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white/80 hover:bg-white text-gray-900 font-bold rounded-lg shadow-md transition duration-200 border border-gray-300">
-    
-                <!-- Microsoft LOGO (SVG) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 21 21">
-                    <path fill="#f25022" d="M1 1h9v9H1z"/>
-                    <path fill="#00a4ef" d="M1 11h9v9H1z"/>
-                    <path fill="#7fba00" d="M11 1h9v9h-9z"/>
-                    <path fill="#ffb900" d="M11 11h9v9h-9z"/>
-                </svg>
-                Sign in with Microsoft
-            </button>
-            
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-900">Don't have an account? 
-                    <a href="register.html" class="text-blue-600 font-bold hover:underline">Register here</a>
-                </p>
+                <button type="button"
+                        class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white/80 hover:bg-white text-gray-900 font-bold rounded-lg shadow-md transition duration-200 border border-gray-300">
+
+                    <!-- Microsoft LOGO (SVG) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 21 21" class="shrink-0">
+                        <path fill="#f25022" d="M1 1h9v9H1z"/>
+                        <path fill="#00a4ef" d="M1 11h9v9H1z"/>
+                        <path fill="#7fba00" d="M11 1h9v9h-9z"/>
+                        <path fill="#ffb900" d="M11 11h9v9h-9z"/>
+                    </svg>
+                    <span class="text-sm sm:text-base">Sign in with Microsoft</span>
+                </button>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-900">Don't have an account?
+                        <a href="register.html" class="text-blue-600 font-bold hover:underline">Register here</a>
+                    </p>
+                </div>
             </div>
         </form>
-            <p id="loginErrorMessage" class="text-[#FF0000] text-sm font-bold text-center bg-[#FF0000]/10 border border-[#FF0000] rounded py-2 mb-4 hidden"></p>
+
+        <p id="loginErrorMessage" class="text-[#FF0000] text-sm font-bold text-center bg-[#FF0000]/10 border border-[#FF0000] rounded py-2 mt-4 hidden"></p>
     </div>
 
-        <script src="auth.js"></script>
-           <script src="config.js"></script>
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
 
 </body>
 </html>
