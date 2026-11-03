@@ -215,11 +215,11 @@ if (reportForm) {
 
         try {
             const response = await fetch(API_BASE + '/api/items', {
-                method: 'POST',
-                // Huwag maglagay ng headers dahil kusa itong iseset ng FormData
-                body: formData
+            method: 'POST',
+    // May token na ngayon: kailangan para makapag-report (Content-Type ay kusang iseset ng FormData)
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: formData
             });
-
             const data = await response.json();
 
             if (response.ok) {
