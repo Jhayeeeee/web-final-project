@@ -1,6 +1,26 @@
 const reportsGrid = document.getElementById('reportsGrid');
 let reportedItems = [];
 
+// --- HTML ESCAPE (para sa text na galing sa user) ---
+function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+// --- IMAGE BLOCK: gamit ang imgSrc() mula sa config.js ---
+// Kung walang valid na URL o sira ang link, lalabas ang "No image provided"
+function imageBlock(url, alt, imgClass) {
+    const src = imgSrc(url);
+    const fallbackHTML = `<div class="w-full h-full bg-[#2a2a2a] flex items-center justify-center text-neutral-400" style="display:none"><span class="text-sm">No image provided</span></div>`;
+
+    if (!src) {
+        return `<div class="w-full h-full bg-[#2a2a2a] flex items-center justify-center text-neutral-400"><span class="text-sm">No image provided</span></div>`;
+    }
+
+    return `<img src="${src}" alt="${escapeHtml(alt)}" class="${imgClass}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">${fallbackHTML}`;
+}
+
 // --- MODAL HELPERS ---
 function showToast(type, title, message) {
     const icons = {
@@ -45,13 +65,12 @@ function showConfirm(title, message, okLabel = 'Confirm', okClass = 'bg-red-600 
 const storedUser = JSON.parse(localStorage.getItem('user'));
 
 if (!storedUser || storedUser.role !== 'admin') {
-    alert("Unauthorized access. Please login as an admin.");
+    alert('Unauthorized access. Please login as an admin.');
     window.location.href = 'index.html';
 }
 
 // --- 2. INITIALIZE PAGE (UI & DATA) ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Wire up toast dismiss button
     const toastOkBtn = document.getElementById('toastOkBtn');
     if (toastOkBtn) toastOkBtn.addEventListener('click', () => {
         document.getElementById('toastModal').classList.add('hidden');
@@ -61,14 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminInitials = document.getElementById('adminInitials');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    // Set Admin Name with robust fallback
     if (storedUser) {
         const displayName = storedUser.fullName || storedUser.name || storedUser.email || 'Admin';
         if (adminNameDisplay) adminNameDisplay.textContent = displayName;
         if (adminInitials) adminInitials.textContent = displayName.charAt(0).toUpperCase();
     }
 
-    // Logout Button
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('user');
@@ -84,17 +101,17 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadReportedItems() {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch( API_BASE + '/api/items', {
+        const response = await fetch(API_BASE + '/api/items', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!response.ok) throw new Error("Failed to fetch items");
+        if (!response.ok) throw new Error('Failed to fetch items');
 
         const allItems = await response.json();
         reportedItems = allItems.filter(item => (item.reportCount || 0) > 0);
         displayReportedItems();
     } catch (error) {
-        console.error("Error loading reports:", error);
+        console.error('Error loading reports:', error);
         reportsGrid.innerHTML = `<p class="text-red-500 font-semibold col-span-full">Error connecting to server. Please check your backend.</p>`;
     }
 }
@@ -108,63 +125,61 @@ function displayReportedItems() {
     }
 
     reportedItems.forEach(item => {
-        // Kunin ang Account Name ng nag-post
+        // Pangalan ng nag-post
         let posterName = 'Unknown User';
         if (item.reportedBy) {
             posterName = item.reportedBy.email || item.reportedBy.fullName || item.reportedBy.name || item.reportedBy;
         }
 
-        // Author info para sa Ban button
+        // Author info para sa Ban / Unban button
         const author = (item.reportedBy && typeof item.reportedBy === 'object') ? item.reportedBy : null;
         const authorId = author ? author._id : null;
         const isBanned = author ? !!author.isBanned : false;
 
-        // Image o Placeholder
-        const imageContent = item.imageURL 
-        ? `<img src="${API_BASE}${item.imageURL}" alt="${item.itemName}" class="w-full h-full object-cover">`
-            : `<div class="w-full h-full bg-[#2a2a2a] flex items-center justify-center text-neutral-400"><span class="text-sm">No image provided</span></div>`;
+        // Larawan
+        const imageContent = imageBlock(item.imageURL, item.itemName, 'w-full h-full object-contain');
 
         // Badge color based on status
         let badgeStyle = 'bg-neutral-500';
         if (item.status === 'lost') badgeStyle = 'bg-red-600';
         if (item.status === 'found') badgeStyle = 'bg-green-600';
         if (item.status === 'claimed') badgeStyle = 'bg-green-600';
-        
+
         const shortId = item._id ? '#' + item._id.substring(item._id.length - 4) : '';
 
         const cardHTML = `
             <div class="bg-white rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-300 shadow-sm flex flex-col relative transition">
-                
+
                 <div class="h-44 relative overflow-hidden bg-[#2a2a2a] flex items-center justify-center">
-                    <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-white text-[10px] font-bold px-2 py-1 rounded tracking-wide uppercase">${item.status}</span>
+                    <span class="absolute top-3 right-3 z-10 ${badgeStyle} text-white text-[10px] font-bold px-2 py-1 rounded tracking-wide uppercase">${escapeHtml(item.status)}</span>
                     ${imageContent}
                 </div>
-                
+
                 <div class="p-4 flex-grow flex flex-col">
                     <div class="flex justify-between items-start mb-2">
-                        <h3 class="text-sm font-bold text-gray-900 truncate" title="${item.itemName}">${item.itemName}</h3>
+                        <h3 class="text-sm font-bold text-gray-900 truncate" title="${escapeHtml(item.itemName)}">${escapeHtml(item.itemName)}</h3>
                         <span class="text-xs text-gray-400">${shortId}</span>
                     </div>
-                    
+
                     <div class="space-y-1.5 mb-4">
                         <p class="text-xs text-gray-500 flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                            <span class="truncate">${posterName}</span>
+                            <span class="truncate">${escapeHtml(posterName)}</span>
                         </p>
                         <p class="text-xs text-gray-500 flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            ${item.incidentDate || 'No date'}
+                            ${escapeHtml(item.incidentDate || 'No date')}
                         </p>
                         <p class="text-xs text-gray-500 flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <span class="truncate">${item.location || 'Location not tagged'}</span>
+                            <span class="truncate">${escapeHtml(item.location || 'Location not tagged')}</span>
                         </p>
-                        
+
                         <div class="mt-2 inline-flex items-center gap-1 bg-red-50 text-red-600 px-2 py-0.5 rounded text-[10px] font-bold border border-red-100">
-                            🚩 ${item.reportCount} Report(s)
+                            🚩 ${escapeHtml(item.reportCount)} Report(s)
                         </div>
                     </div>
-                    
+
                     <div class="mt-auto flex gap-2 flex-wrap">
                         <button onclick="openDetailsModal('${item._id}')" class="px-3 py-1.5 bg-neutral-800 hover:bg-black text-white rounded-md text-xs font-bold transition flex items-center justify-center">View</button>
                         <button onclick="dismissReport('${item._id}')" class="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-md text-xs font-bold transition flex items-center justify-center border border-neutral-200">Dismiss</button>
@@ -195,7 +210,7 @@ async function dismissReport(itemId) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch( API_BASE + `/api/items/${itemId}/dismiss-report`, {
+        const response = await fetch(API_BASE + `/api/items/${itemId}/dismiss-report`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -229,7 +244,7 @@ async function deleteAdminItem(itemId) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch( API_BASE + `/api/items/${itemId}`, {
+        const response = await fetch(API_BASE + `/api/items/${itemId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -249,13 +264,13 @@ async function deleteAdminItem(itemId) {
     }
 }
 
-// --- 4b. BAN / UNBAN POSTER ---
+// --- 4b. BAN / UNBAN POSTER (auto-delete ng posts kapag na-ban) ---
 async function toggleBanUser(userId, isCurrentlyBanned) {
     const confirmed = await showConfirm(
         isCurrentlyBanned ? 'Unban this Account?' : 'Ban this Account?',
         isCurrentlyBanned
-            ? 'This account will be able to log in again.'
-            : 'This user will be blocked from logging in. Their existing posts will not be removed.',
+            ? 'This account will be able to log in again. Deleted posts will NOT be restored.'
+            : 'This user will be blocked from logging in, and all of their posts will be permanently deleted.',
         isCurrentlyBanned ? 'Yes, Unban' : 'Yes, Ban',
         isCurrentlyBanned ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'
     );
@@ -263,7 +278,7 @@ async function toggleBanUser(userId, isCurrentlyBanned) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch( API_BASE + `/api/users/${userId}/ban`, {
+        const response = await fetch(API_BASE + `/api/users/${userId}/ban`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -284,31 +299,34 @@ async function toggleBanUser(userId, isCurrentlyBanned) {
     }
 }
 
-// --- 5. MODAL LOGIC (With Account Name) ---
+// --- 5. MODAL LOGIC (Item Full Details) ---
 function openDetailsModal(itemId) {
     const item = reportedItems.find(i => i._id === itemId);
     if (!item) return;
 
     const rawDate = item.incidentDate || item.createdAt || 'N/A';
 
-    // Extract account name para sa modal
     let posterName = 'Unknown User';
     if (item.reportedBy) {
         posterName = item.reportedBy.email || item.reportedBy.fullName || item.reportedBy.name || item.reportedBy;
     }
 
+    const detailImage = item.imageURL
+        ? `<div class="w-full h-48 rounded-lg mb-3 border bg-neutral-100 overflow-hidden flex items-center justify-center">${imageBlock(item.imageURL, item.itemName, 'w-full h-full object-contain')}</div>`
+        : '';
+
     document.getElementById('detailsModalContent').innerHTML = `
         <div class="space-y-3">
-            ${item.imageURL ? `<img src="${API_BASE}${item.imageURL}" class="w-full h-48 object-cover rounded-lg mb-3 border">` : ''}
-            <p><strong>Item Name:</strong> ${item.itemName}</p>
-            <p><strong>Posted By:</strong> ${posterName} <span class="text-xs text-gray-400 bg-gray-100 px-1 py-0.5 rounded">(Author)</span></p>
-            <p><strong>Description:</strong> ${item.description || 'No description provided.'}</p>
-            <p><strong>Category:</strong> ${item.category || 'N/A'}</p>
-            <p><strong>Status:</strong> <span class="uppercase font-semibold px-2 py-0.5 bg-neutral-100 rounded text-xs">${item.status}</span></p>
-            <p><strong>Total Reports:</strong> <span class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded border border-red-100">${item.reportCount}</span></p>
-            <p><strong>Date:</strong> ${rawDate}</p>
-            <p><strong>Location:</strong> ${item.location || 'N/A'}</p>
-            ${item.latitude && item.longitude ? `<p><strong>Coordinates:</strong> ${item.latitude}, ${item.longitude}</p>` : ''}
+            ${detailImage}
+            <p><strong>Item Name:</strong> ${escapeHtml(item.itemName)}</p>
+            <p><strong>Posted By:</strong> ${escapeHtml(posterName)} <span class="text-xs text-gray-400 bg-gray-100 px-1 py-0.5 rounded">(Author)</span></p>
+            <p><strong>Description:</strong> ${escapeHtml(item.description || 'No description provided.')}</p>
+            <p><strong>Category:</strong> ${escapeHtml(item.category || 'N/A')}</p>
+            <p><strong>Status:</strong> <span class="uppercase font-semibold px-2 py-0.5 bg-neutral-100 rounded text-xs">${escapeHtml(item.status)}</span></p>
+            <p><strong>Total Reports:</strong> <span class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded border border-red-100">${escapeHtml(item.reportCount)}</span></p>
+            <p><strong>Date:</strong> ${escapeHtml(rawDate)}</p>
+            <p><strong>Location:</strong> ${escapeHtml(item.location || 'N/A')}</p>
+            ${item.latitude && item.longitude ? `<p><strong>Coordinates:</strong> ${escapeHtml(item.latitude)}, ${escapeHtml(item.longitude)}</p>` : ''}
         </div>
     `;
 
