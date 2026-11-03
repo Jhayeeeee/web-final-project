@@ -206,6 +206,18 @@ app.post("/api/items", verifyToken, uploadSingle, async (req, res) => {
     try {
         const { itemName, description, category, status, location, incidentDate, latitude, longitude } = req.body;
 
+        // Pigilan ang double post: kung may parehong pangalan galing sa parehong user sa nakaraang 60 segundo
+        const recentDuplicate = await Item.findOne({
+            reportedBy: req.user.id,
+            itemName,
+            dateReported: { $gte: new Date(Date.now() - 60 * 1000) }
+        });
+        if (recentDuplicate) {
+            return res.status(409).json({
+                message: "This item was just posted. Please wait a moment before posting it again."
+            });
+        }
+
         const newItem = new Item({
             itemName,
             description,
