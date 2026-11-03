@@ -6,6 +6,25 @@
     <title>Lost & Found Portal - Feed</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+    
+    #reportForm input,
+    #reportForm select,
+    #reportForm textarea {
+        font-size: 16px;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+
+    #reportForm input[type="date"] {
+        -webkit-appearance: none;
+        appearance: none;
+        display: block;
+        width: 100%;
+    }
+</style>
 </head>
 <body class="bg-neutral-200 min-h-screen text-neutral-800 font-sans antialiased">
 
@@ -131,84 +150,86 @@
         </div>
 
         <!-- COMPACT Report Item Modal -->
-        <div id="reportModal" class="fixed inset-0 bg-black/80 hidden flex justify-center items-center z-50 backdrop-blur-sm p-3 sm:p-4">
-            <div class="bg-neutral-200 p-4 sm:p-6 rounded-xl border border-neutral-300 w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
-                
-                <button id="closeReportBtn" class="absolute top-3 right-4 text-neutral-700 hover:text-gray-900 text-xl font-bold">&times;</button>
-                <h2 class="text-lg sm:text-xl font-bold text-neutral-700 mb-4">Report an Item</h2>
-                
-                <form id="reportForm" class="space-y-3">
+<div id="reportModal" class="fixed inset-0 bg-black/80 hidden z-50 backdrop-blur-sm overflow-y-auto overscroll-contain">
+    <div class="min-h-full flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-neutral-200 p-4 sm:p-6 rounded-xl border border-neutral-300 w-full max-w-lg shadow-2xl relative">
+
+            <button id="closeReportBtn" class="absolute top-3 right-4 text-neutral-700 hover:text-gray-900 text-xl font-bold">&times;</button>
+            <h2 class="text-lg sm:text-xl font-bold text-neutral-700 mb-4">Report an Item</h2>
+
+            <form id="reportForm" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Item Name</label>
+                    <input type="text" id="itemName" required class="w-full px-3 py-1.5 bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="itemDesc" required rows="2" class="w-full px-3 py-1.5 bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Item Name</label>
-                        <input type="text" id="itemName" required class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                        <select id="itemCategory" class="w-full px-3 py-1.5 bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
+                            <option value="Electronics">Electronics</option>
+                            <option value="IDs & Cards">IDs & Cards</option>
+                            <option value="Bags">Bags</option>
+                            <option value="Others">Others</option>
+                        </select>
                     </div>
-                    
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                        <textarea id="itemDesc" required rows="2" class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500"></textarea>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                        <select id="itemStatus" class="w-full px-3 py-1.5 bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
+                            <option value="lost">Lost (I lost this)</option>
+                            <option value="found">Found (I found this)</option>
+                        </select>
                     </div>
+                </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
-                            <select id="itemCategory" class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
-                                <option value="Electronics">Electronics</option>
-                                <option value="IDs & Cards">IDs & Cards</option>
-                                <option value="Bags">Bags</option>
-                                <option value="Others">Others</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                            <select id="itemStatus" class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
-                                <option value="lost">Lost (I lost this)</option>
-                                <option value="found">Found (I found this)</option>
-                            </select>
-                        </div>
-                    </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Date Lost/Found</label>
+                    <input type="date" id="itemDate" required class="w-full px-3 py-1.5 bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
+                </div>
 
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Date Lost/Found</label>
-                        <input type="date" id="itemDate" required class="w-full px-3 py-1.5 text-sm bg-neutral-100 border border-neutral-300 rounded focus:outline-none focus:border-neutral-500">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Location</label>
-                        <button type="button" id="getLocationBtn" class="mb-1.5 w-full py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold rounded flex justify-center items-center gap-1 transition">
-                            📍 Auto-Detect Exact Location
-                        </button>
-                        <p id="geoStatus" class="text-[10px] text-neutral-500 mb-1.5 text-center hidden"></p>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <select id="campusBuilding" class="w-full px-2 py-1.5 bg-neutral-100 border border-neutral-300 rounded text-neutral-700 text-xs focus:outline-none">
-                                <option value="">Select Building</option>
-                                <option value="Gusaling Corazon Aquino">GCA</option>
-                                <option value="Gusaling Villegas">GV</option>
-                                <option value="University Library">Library</option>
-                                <option value="Campus Grounds">Grounds</option>
-                                <option value="Other">Other (Please specify in the description)</option>
-                            </select>
-                            <select id="campusRoom" disabled class="w-full px-2 py-1.5 bg-neutral-100 border border-neutral-300 rounded text-neutral-700 text-xs focus:outline-none disabled:opacity-50">
-                                <option value="">Area/Room</option>
-                            </select>
-                        </div>
-                        <input type="hidden" id="latitude">
-                        <input type="hidden" id="longitude">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Upload Picture</label>
-                        <input type="file" id="itemImage" accept="image/*" class="w-full text-xs text-neutral-700 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
-                    </div>
-
-                    <p id="reportMessage" class="text-xs font-bold text-center hidden"></p>
-
-                    <button type="submit" class="w-full py-2.5 mt-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded transition shadow">
-                        Submit Report
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Location</label>
+                    <button type="button" id="getLocationBtn" class="mb-1.5 w-full py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold rounded flex justify-center items-center gap-1 transition">
+                        📍 Auto-Detect Exact Location
                     </button>
-                </form>
-            </div>
+                    <p id="geoStatus" class="text-[10px] text-neutral-500 mb-1.5 text-center hidden"></p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <select id="campusBuilding" class="w-full px-2 py-1.5 bg-neutral-100 border border-neutral-300 rounded text-neutral-700 focus:outline-none">
+                            <option value="">Select Building</option>
+                            <option value="Gusaling Corazon Aquino">GCA</option>
+                            <option value="Gusaling Villegas">GV</option>
+                            <option value="University Library">Library</option>
+                            <option value="Campus Grounds">Grounds</option>
+                            <option value="Other">Other (Please specify in the description)</option>
+                        </select>
+                        <select id="campusRoom" disabled class="w-full px-2 py-1.5 bg-neutral-100 border border-neutral-300 rounded text-neutral-700 focus:outline-none disabled:opacity-50">
+                            <option value="">Area/Room</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="latitude">
+                    <input type="hidden" id="longitude">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Upload Picture</label>
+                    <input type="file" id="itemImage" accept="image/*" class="w-full text-xs text-neutral-700 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                </div>
+
+                <p id="reportMessage" class="text-xs font-bold text-center hidden"></p>
+
+                <button type="submit" class="w-full py-2.5 mt-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded transition shadow">
+                    Submit Report
+                </button>
+            </form>
         </div>
+    </div>
+</div>
 
         <!-- ITEM DETAILS MODAL -->
         <div id="itemDetailsModal" class="fixed inset-0 bg-black/80 hidden flex justify-center items-center z-50 backdrop-blur-sm p-3 sm:p-4">

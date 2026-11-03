@@ -600,8 +600,13 @@ async function reportItem(itemId) {
     }
 }
 
-// =============================================
-// --- INIT ---
-// =============================================
+// iOS: kapag nag-focus sa field ng report form, ilipat ito sa gitna ng screen
+// para hindi matakpan ng keyboard
+document.querySelectorAll('#reportForm input, #reportForm select, #reportForm textarea').forEach(el => {
+    el.addEventListener('focus', () => {
+        setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+    });
+});
+
 
 loadItems();
