@@ -73,7 +73,7 @@ const verifyToken = (req, res, next) => {
         req.user = jwt.verify(token, JWT_SECRET);
         next();
     } catch (error) {
-        res.status(400).json({ message: "Invalid token." });
+        res.status(401).json({ message: "Invalid or expired token. Please login again." });
     }
 };
 
@@ -187,13 +187,13 @@ app.put("/api/users/:id/ban", verifyToken, async (req, res) => {
     }
 });
 
-// --- ADMIN: GET ALL USERS ---
+// --- ADMIN: GET ALL NON-ADMIN USERS (kasama ang walang role field) ---
 app.get("/api/users", verifyToken, async (req, res) => {
     try {
         if (req.user.role !== "admin") {
             return res.status(403).json({ message: "Access denied. Admins only." });
         }
-        const users = await User.find({ role: "user" }).select("-password");
+        const users = await User.find({ role: { $ne: "admin" } }).select("-password");
         res.status(200).json(users);
     } catch (error) {
         console.error("Fetch Users Error:", error);
@@ -201,10 +201,10 @@ app.get("/api/users", verifyToken, async (req, res) => {
     }
 });
 
-// --- REPORT ITEM (may image upload sa Cloudinary) ---
-app.post("/api/items", uploadSingle, async (req, res) => {
+// --- REPORT ITEM (may login at image upload sa Cloudinary) ---
+app.post("/api/items", verifyToken, uploadSingle, async (req, res) => {
     try {
-        const { itemName, description, category, status, location, incidentDate, reportedBy, latitude, longitude } = req.body;
+        const { itemName, description, category, status, location, incidentDate, latitude, longitude } = req.body;
 
         const newItem = new Item({
             itemName,
@@ -213,7 +213,7 @@ app.post("/api/items", uploadSingle, async (req, res) => {
             status,
             location,
             incidentDate,
-            reportedBy,
+            reportedBy: req.user.id, // galing sa token, hindi sa form
             latitude: latitude || null,
             longitude: longitude || null
         });
@@ -289,10 +289,11 @@ app.put("/api/items/:id/status", verifyToken, async (req, res) => {
 
         const wasSurrendered = previousItem.status === "surrendered";
 
+        // runValidators: sinisigurong valid ang status ayon sa enum sa model
         const updatedItem = await Item.findByIdAndUpdate(
             req.params.id,
             { status },
-            { new: true }
+            { new: true, runValidators: true }
         );
 
         if (wasSurrendered && status === "claimed" && updatedItem.reportedBy) {
@@ -313,12 +314,9 @@ app.put("/api/items/:id/status", verifyToken, async (req, res) => {
 });
 
 // --- REPORT A POST (spam) ---
-app.post("/api/items/:id/report", async (req, res) => {
+app.post("/api/items/:id/report", verifyToken, async (req, res) => {
     try {
-        const { userId } = req.body;
-        if (!userId) {
-            return res.status(400).json({ message: "User ID is required." });
-        }
+        const userId = req.user.id; // galing sa token
 
         const item = await Item.findById(req.params.id);
         if (!item) {
@@ -374,8 +372,12 @@ app.put("/api/items/:id/dismiss-report", verifyToken, async (req, res) => {
 // --- CHANGE PASSWORD ---
 app.put("/api/users/change-password", verifyToken, async (req, res) => {
     try {
-        const userId = req.user.id || req.user._id;
+        const userId = req.user.id;
         const { currentPassword, newPassword } = req.body;
+
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ message: "New password must be at least 6 characters." });
+        }
 
         const user = await User.findById(userId);
         if (!user) {
@@ -490,4 +492,4 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
-module.exports = app;   
+module.exports = app;
