@@ -169,20 +169,34 @@ if (closeReportBtn) {
 // --- SUBMIT ITEM LOGIC ---
 // =============================================
 
+// =============================================
+// --- SUBMIT ITEM LOGIC (may guard laban sa double post) ---
+// =============================================
+
+let isSubmittingReport = false;
+const submitReportBtn = document.getElementById('submitReportBtn');
+
+function setSubmitting(state, label) {
+    isSubmittingReport = state;
+    if (!submitReportBtn) return;
+    submitReportBtn.disabled = state;
+    submitReportBtn.textContent = label;
+}
+
 if (reportForm) {
     reportForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // Kung nagpo-post na, huwag nang ituloy (double click o paulit-ulit na Enter)
+        if (isSubmittingReport) return;
+
         // VALIDATION: kailangan ng GPS o building
         const latValue = latInput.value;
-
         if (!latValue && buildingSelect.value === '') {
             buildingSelect.setCustomValidity("Please choose a building. If it's not among the choices, select 'other'");
             buildingSelect.reportValidity();
             return;
         }
-
-        // May laman na kaya linisin ang error
         buildingSelect.setCustomValidity('');
 
         const storedUserData = JSON.parse(localStorage.getItem('user'));
@@ -196,7 +210,6 @@ if (reportForm) {
         const room = campusRoom.value;
         const combinedLocation = (building && room) ? `${building} - ${room}` : (building || 'GPS Location Tagged');
 
-        // FormData ang gamit para sa file upload
         const formData = new FormData();
         formData.append('itemName', document.getElementById('itemName').value);
         formData.append('description', document.getElementById('itemDesc').value);
@@ -206,41 +219,49 @@ if (reportForm) {
         formData.append('incidentDate', document.getElementById('itemDate').value);
         formData.append('latitude', latValue || '');
         formData.append('longitude', lngInput.value || '');
-        formData.append('reportedBy', storedUserData.id);
 
         const imageFile = document.getElementById('itemImage').files[0];
         if (imageFile) {
             formData.append('image', imageFile);
         }
 
+        // Simulan ang loading: naka-disable na ang button hanggang matapos
+        setSubmitting(true, 'Posting, please wait...');
+        reportMessage.textContent = 'Uploading and saving your report...';
+        reportMessage.className = 'text-xs font-bold text-center text-neutral-600 block mt-2';
+
         try {
             const response = await fetch(API_BASE + '/api/items', {
-            method: 'POST',
-    // May token na ngayon: kailangan para makapag-report (Content-Type ay kusang iseset ng FormData)
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-            body: formData
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: formData
             });
-            const data = await response.json();
+
+            const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
                 reportMessage.textContent = 'Item successfully saved!';
                 reportMessage.className = 'text-xs font-bold text-center text-green-600 block mt-2';
 
+                // Mananatiling disabled ang button habang nakikita ang mensahe
                 setTimeout(() => {
                     reportModal.classList.add('hidden');
                     reportForm.reset();
                     resetRoomDropdown();
                     reportMessage.classList.add('hidden');
+                    setSubmitting(false, 'Submit Report');
                     loadItems();
                 }, 2000);
             } else {
                 reportMessage.textContent = data.detail || data.message || 'Failed to save item.';
                 reportMessage.className = 'text-xs font-bold text-center text-red-500 block mt-2';
+                setSubmitting(false, 'Submit Report');
             }
         } catch (error) {
             console.error('Error saving item:', error);
-            reportMessage.textContent = 'Cannot connect to server.';
+            reportMessage.textContent = 'Cannot connect to server. Please try again.';
             reportMessage.className = 'text-xs font-bold text-center text-red-500 block mt-2';
+            setSubmitting(false, 'Submit Report');
         }
     });
 }
