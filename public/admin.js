@@ -133,17 +133,17 @@ function displayAdminItems(items) {
             ? `<img src="${imgUrl}" alt="${escapeHtml(item.itemName)}" class="w-full h-full object-contain" onerror="this.style.display='none'">`
             : `<div class="w-full h-full bg-[#3a3a3a] flex flex-col items-center justify-center text-neutral-400" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);">
                 <span class="text-xs font-semibold tracking-wide">No image provided</span>
-               </div>`;
+            </div>`;
 
-        let badgeStyle = 'bg-neutral-600 text-white';
+        let badgeStyle = 'bg-neutral-500 text-white';
         let claimButtonHTML = '';
 
         if (item.status === 'lost') {
-            badgeStyle = 'bg-red-600 text-whit        e';
+            badgeStyle = 'bg-red-600 text-white';
             claimButtonHTML = `<button disabled class="w-full py-2 bg-red-50 text-red-300 border border-red-100 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Still Missing</button>`;
         } else if (item.status === 'found') {
-    // Found pa lang: hindi pa surrendered sa admin, kaya walang Mark c        laimed
-            badgeStyle = 'bg-green-600 text-        white';
+    // Found pa lang: hindi pa surrendered sa admin, kaya walang Mark claimed
+            badgeStyle = 'bg-green-600 text-white';
             claimButtonHTML = `<button disabled class="w-full py-2 bg-neutral-100 text-neutral-500 border border-neutral-200 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Not yet surrendered</button>`;
         } else if (item.status === 'surrendered') {
     // Nasa admin office na: puwede nang i-mark claimed
