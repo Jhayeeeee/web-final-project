@@ -11,6 +11,14 @@ function escapeHtml(str) {
  * @param {string} title
  * @param {string} message
  */
+// --- Tinitingnan kung ang naka-login na user ang nag-post ng item ---
+function isItemOwner(item) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return false;
+    const ownerId = item.reportedBy?._id || item.reportedBy;
+    return String(ownerId) === String(user.id || user._id);
+}
+
 function showToast(type, title, message) {
     const icons = {
         success: `<svg class="w-14 h-14 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
@@ -368,9 +376,9 @@ function displayItems(itemsToDisplay) {
 
                     ${reportButtonHTML}
 
-                    <button onclick="openItemDetails('${item._id}')" class="mt-auto w-full py-2 text-white text-xs sm:text-sm font-semibold rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${buttonStyle}">
-                        ${buttonText}
-                    </button>
+                    ${isOwner
+                        ? `<a href="my-claims.html" class="mt-auto w-full py-2 text-center bg-neutral-200 text-neutral-700 text-xs sm:text-sm font-semibold rounded-md hover:bg-neutral-300 transition">Your post · Manage in My Claims</a>`
+                        : `<button onclick="openItemDetails('${item._id}')" class="mt-auto w-full py-2 text-white text-xs sm:text-sm font-semibold rounded-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${buttonStyle}">${buttonText}</button>`}
                 </div>
             </div>
         `;
@@ -469,6 +477,13 @@ function openItemDetails(itemId) {
     const newActionBtn = actionBtn.cloneNode(true);
     actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
 
+        if (isItemOwner(item)) {
+    // Sariling post: huwag payagan ang contact sa sarili
+    newActionBtn.textContent = 'This is your post';
+    newActionBtn.disabled = true;
+    newActionBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'bg-green-600', 'hover:bg-green-700', 'bg-orange-500', 'hover:bg-orange-600');
+    newActionBtn.classList.add('bg-neutral-400', 'cursor-not-allowed');
+        } else {
     newActionBtn.addEventListener('click', () => {
         if (item.status === 'surrendered') {
             document.getElementById('adminInfoModal').classList.remove('hidden');
@@ -479,6 +494,7 @@ function openItemDetails(itemId) {
             window.open(gmailUrl, '_blank');
         }
     });
+}
 
     document.getElementById('itemDetailsModal').classList.remove('hidden');
 }
