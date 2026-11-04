@@ -149,41 +149,56 @@ app.post("/api/login", async (req, res) => {
     }
 });
 
-// --- ADMIN: BAN / UNBAN USER (auto-delete posts kapag na-ban) ---
-app.put("/api/users/:id/ban", verifyToken, async (req, res) => {
+
+// --- UPDATE ITEM STATUS (admin o ang owner ng post, may limitasyon ang owner) ---
+app.put("/api/items/:id/status", verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== "admin") {
-            return res.status(403).json({ message: "Access denied. Admins only." });
+        const { status } = req.body;
+        const isAdmin = req.user.role === "admin";
+
+        const previousItem = await Item.findById(req.params.id);
+        if (!previousItem) return res.status(404).json({ message: "Item not found." });
+
+        if (!isAdmin) {
+            const isOwner = previousItem.reportedBy && previousItem.reportedBy.toString() === req.user.id;
+            if (!isOwner) {
+                return res.status(403).json({ message: "Forbidden. You can only update your own posts." });
+            }
+
+            // Owner: 'claimed' (nahanap/naibalik na) o 'surrendered' (ibinigay sa admin, found items lang)
+            const isAllowed =
+                status === "claimed" ||
+                (status === "surrendered" && previousItem.status === "found");
+
+            if (!isAllowed) {
+                return res.status(403).json({ message: "Forbidden. You cannot set this status." });
+            }
         }
 
-        const userToUpdate = await User.findById(req.params.id);
-        if (!userToUpdate) {
-            return res.status(404).json({ message: "User not found." });
+        const wasSurrendered = previousItem.status === "surrendered";
+
+        // runValidators: sinisigurong valid ang status ayon sa enum sa model
+        const updatedItem = await Item.findByIdAndUpdate(
+            req.params.id,
+            { status },
+            { new: true, runValidators: true }
+        );
+
+        // Notification sa student kapag na-claim ng admin ang surrendered na item niya
+        if (isAdmin && wasSurrendered && status === "claimed" && updatedItem.reportedBy) {
+            await Notification.create({
+                recipient: updatedItem.reportedBy,
+                type: "item_claimed",
+                title: "Your surrendered item was claimed",
+                message: `"${updatedItem.itemName}" has been claimed by its owner. Thank you for returning it!`,
+                item: updatedItem._id
+            });
         }
 
-        if (userToUpdate.role === "admin") {
-            return res.status(403).json({ message: "You cannot ban another admin." });
-        }
-
-        userToUpdate.isBanned = !userToUpdate.isBanned;
-        await userToUpdate.save();
-
-        let deletedCount = 0;
-        if (userToUpdate.isBanned) {
-            const result = await Item.deleteMany({ reportedBy: userToUpdate._id });
-            deletedCount = result.deletedCount;
-        }
-
-        res.status(200).json({
-            message: userToUpdate.isBanned
-                ? `User banned. ${deletedCount} post(s) deleted.`
-                : "User successfully unbanned.",
-            isBanned: userToUpdate.isBanned,
-            deletedCount
-        });
+        res.status(200).json({ message: "Status successfully updated!", item: updatedItem });
     } catch (error) {
-        console.error("Ban User Error:", error);
-        res.status(500).json({ message: "Server error while updating user status." });
+        console.error("Error updating status:", error);
+        res.status(500).json({ message: "Server error while updating status." });
     }
 });
 
