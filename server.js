@@ -458,6 +458,37 @@ app.put("/api/notifications/:id/read", verifyToken, async (req, res) => {
     }
 });
 
+// --- NOTIFICATIONS: clear one (ang sariling notification lang) ---
+app.delete("/api/notifications/:id", verifyToken, async (req, res) => {
+    try {
+        const deleted = await Notification.findOneAndDelete({
+            _id: req.params.id,
+            recipient: req.user.id
+        });
+        if (!deleted) return res.status(404).json({ message: "Notification not found." });
+
+        res.status(200).json({ message: "Notification deleted." });
+    } catch (error) {
+        console.error("Delete Notification Error:", error);
+        res.status(500).json({ message: "Server error while deleting notification." });
+    }
+});
+
+// --- NOTIFICATIONS: clear all (ang sa user lang na naka-login) ---
+app.delete("/api/notifications", verifyToken, async (req, res) => {
+    try {
+        const result = await Notification.deleteMany({ recipient: req.user.id });
+        res.status(200).json({
+            message: "All notifications cleared.",
+            deletedCount: result.deletedCount
+        });
+    } catch (error) {
+        console.error("Clear Notifications Error:", error);
+        res.status(500).json({ message: "Server error while clearing notifications." });
+    }
+});
+
+
 // --- ADMIN: BROADCAST NOTIFICATION SA LAHAT NG STUDENTS ---
 app.post("/api/admin/notifications/broadcast", verifyToken, async (req, res) => {
     try {
