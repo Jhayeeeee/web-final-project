@@ -20,7 +20,8 @@
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
     });
-        // Styled confirm modal (pumapalit sa native confirm() ng browser)
+
+    // Styled confirm modal (pumapalit sa native confirm() ng browser)
     function showNotifConfirm(title, message, okLabel = 'Yes') {
         return new Promise((resolve) => {
             const modal = document.getElementById('notifConfirmModal');
@@ -157,6 +158,7 @@
             console.error('Error deleting notification:', error);
         }
     }
+
     async function clearAll() {
         if (notifications.length === 0) return;
 
@@ -182,6 +184,14 @@
             console.error('Error clearing notifications:', error);
         }
     }
+
+    // Toggle dropdown
+    bellBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpening = dropdown.classList.contains('hidden');
+        dropdown.classList.toggle('hidden');
+        if (isOpening) loadNotifications();
+    });
 
     // Close when clicking outside
     document.addEventListener('click', (e) => {
