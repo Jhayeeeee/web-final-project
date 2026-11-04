@@ -139,19 +139,20 @@ function displayAdminItems(items) {
         let claimButtonHTML = '';
 
         if (item.status === 'lost') {
-            badgeStyle = 'bg-red-600 text-white';
+            badgeStyle = 'bg-red-600 text-whit        e';
             claimButtonHTML = `<button disabled class="w-full py-2 bg-red-50 text-red-300 border border-red-100 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Still Missing</button>`;
         } else if (item.status === 'found') {
-            badgeStyle = 'bg-green-600 text-white';
-            claimButtonHTML = `<button onclick="markAsClaimed('${item._id}')" class="w-full py-2 bg-black hover:bg-gray-800 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1">✓ Mark claimed</button>`;
+    // Found pa lang: hindi pa surrendered sa admin, kaya walang Mark c        laimed
+            badgeStyle = 'bg-green-600 text-        white';
+            claimButtonHTML = `<button disabled class="w-full py-2 bg-neutral-100 text-neutral-500 border border-neutral-200 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Not yet surrendered</button>`;
         } else if (item.status === 'surrendered') {
+    // Nasa admin office na: puwede nang i-mark claimed
             badgeStyle = 'bg-orange-500 text-white';
             claimButtonHTML = `<button onclick="markAsClaimed('${item._id}')" class="w-full py-2 bg-black hover:bg-gray-800 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1">✓ Mark claimed</button>`;
         } else if (item.status === 'claimed') {
             badgeStyle = 'bg-green-600 text-white';
             claimButtonHTML = `<button disabled class="w-full py-2 bg-neutral-200 text-neutral-500 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Already Claimed</button>`;
         }
-
         const displayId = item._id.substring(item._id.length - 4);
 
         // Admin can delete any post, regardless of status
@@ -250,7 +251,8 @@ function markAsClaimed(itemId) {
             if (response.ok) {
                 loadAdminInventory();
             } else {
-                showCustomModal('Error', 'Session expired or access denied. Please login again.', false);
+                const data = await response.json().catch(() => ({}));
+            showCustomModal('Not allowed', data.message || 'Failed to update status.', false);
             }
         } catch (error) {
             console.error('Error:', error);

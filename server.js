@@ -150,7 +150,7 @@ app.post("/api/login", async (req, res) => {
 });
 
 
-// --- UPDATE ITEM STATUS (admin o ang owner ng post, may limitasyon ang owner) ---
+// --- UPDATE ITEM STATUS (admin o ang owner, may limitasyon) ---
 app.put("/api/items/:id/status", verifyToken, async (req, res) => {
     try {
         const { status } = req.body;
@@ -159,13 +159,21 @@ app.put("/api/items/:id/status", verifyToken, async (req, res) => {
         const previousItem = await Item.findById(req.params.id);
         if (!previousItem) return res.status(404).json({ message: "Item not found." });
 
-        if (!isAdmin) {
+        if (isAdmin) {
+            // Admin: 'claimed' lang kapag surrendered na ang item sa admin office
+            if (status === "claimed" && previousItem.status !== "surrendered") {
+                return res.status(400).json({
+                    message: "Only items surrendered to the admin office can be marked as claimed."
+                });
+            }
+        } else {
+            // Owner lang ang puwedeng mag-update ng sariling post
             const isOwner = previousItem.reportedBy && previousItem.reportedBy.toString() === req.user.id;
             if (!isOwner) {
                 return res.status(403).json({ message: "Forbidden. You can only update your own posts." });
             }
 
-            // Owner: 'claimed' (nahanap/naibalik na) o 'surrendered' (ibinigay sa admin, found items lang)
+            // Owner: 'claimed' (nahanap o naibalik na) o 'surrendered' (ibinigay sa admin, found items lang)
             const isAllowed =
                 status === "claimed" ||
                 (status === "surrendered" && previousItem.status === "found");
@@ -177,7 +185,6 @@ app.put("/api/items/:id/status", verifyToken, async (req, res) => {
 
         const wasSurrendered = previousItem.status === "surrendered";
 
-        // runValidators: sinisigurong valid ang status ayon sa enum sa model
         const updatedItem = await Item.findByIdAndUpdate(
             req.params.id,
             { status },
