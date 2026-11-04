@@ -143,7 +143,7 @@ function displayAdminItems(items) {
             claimButtonHTML = `<button disabled class="w-full py-2 bg-red-50 text-red-300 border border-red-100 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Still Missing</button>`;
         } else if (item.status === 'found') {
     // Found pa lang: hindi pa surrendered sa admin, kaya walang Mark claimed
-            badgeStyle = 'bg-green-600 text-white';
+            badgeStyle = 'bg-blue-600 text-white';
             claimButtonHTML = `<button disabled class="w-full py-2 bg-neutral-100 text-neutral-500 border border-neutral-200 text-xs font-bold rounded-lg cursor-not-allowed flex items-center justify-center gap-1">Not yet surrendered</button>`;
         } else if (item.status === 'surrendered') {
     // Nasa admin office na: puwede nang i-mark claimed
