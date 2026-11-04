@@ -20,6 +20,31 @@
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
     });
+        // Styled confirm modal (pumapalit sa native confirm() ng browser)
+    function showNotifConfirm(title, message, okLabel = 'Yes') {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('notifConfirmModal');
+            const okBtn = document.getElementById('notifConfirmOkBtn');
+            const cancelBtn = document.getElementById('notifConfirmCancelBtn');
+
+            document.getElementById('notifConfirmTitle').textContent = title;
+            document.getElementById('notifConfirmMessage').textContent = message;
+            okBtn.textContent = okLabel;
+            modal.classList.remove('hidden');
+
+            const cleanup = (result) => {
+                modal.classList.add('hidden');
+                okBtn.removeEventListener('click', onOk);
+                cancelBtn.removeEventListener('click', onCancel);
+                resolve(result);
+            };
+            const onOk = () => cleanup(true);
+            const onCancel = () => cleanup(false);
+
+            okBtn.addEventListener('click', onOk);
+            cancelBtn.addEventListener('click', onCancel);
+        });
+    }
 
     function renderBadge() {
         if (unreadCount > 0) {
@@ -132,10 +157,15 @@
             console.error('Error deleting notification:', error);
         }
     }
-
     async function clearAll() {
         if (notifications.length === 0) return;
-        if (!confirm('Clear all notifications? This cannot be undone.')) return;
+
+        const confirmed = await showNotifConfirm(
+            'Clear all notifications?',
+            'This cannot be undone.',
+            'Yes, Clear'
+        );
+        if (!confirmed) return;
 
         try {
             const response = await fetch(API_BASE + '/api/notifications', {
@@ -152,14 +182,6 @@
             console.error('Error clearing notifications:', error);
         }
     }
-
-    // Toggle dropdown
-    bellBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpening = dropdown.classList.contains('hidden');
-        dropdown.classList.toggle('hidden');
-        if (isOpening) loadNotifications();
-    });
 
     // Close when clicking outside
     document.addEventListener('click', (e) => {
