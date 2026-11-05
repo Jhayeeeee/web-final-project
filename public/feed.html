@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lost & Found Portal - Feed</title>
+    <script>
+    (function () {
+        const u = JSON.parse(localStorage.getItem('user') || 'null');
+        if (u && u.role === 'admin') location.replace('admin.html');
+    })();
+    </script>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -24,68 +31,85 @@
         display: block;
         width: 100%;
     }
+
+    /* Prevent horizontal scroll / overflow on small screens */
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Prevent iOS auto-zoom on focus for the feed filters */
+    @media (max-width: 639px) {
+        #searchInput,
+        #categoryFilter {
+            font-size: 16px;
+        }
+    }
+
+    /* Make sure cards injected by feed.js never overflow the screen */
+    #itemsGrid > * {
+        min-width: 0;
+        max-width: 100%;
+    }
 </style>
 </head>
-<body class="bg-neutral-200 min-h-screen text-neutral-800 font-sans antialiased">
+<body class="bg-neutral-200 min-h-screen text-neutral-800 font-sans antialiased overflow-x-hidden">
 
- <!-- NAVBAR -->
-<nav class="bg-neutral-900 text-white p-3 sm:p-4 shadow-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto flex justify-between items-center gap-2">
+<nav class="bg-[#1a1a1a] text-white px-4 sm:px-6 py-3 shadow-md sticky top-0 z-40">
+    <div class="flex items-center justify-between gap-3">
 
-        <!-- Left: Logo & desktop links -->
-        <div class="flex items-center gap-6 min-w-0">
-            <h1 class="text-base sm:text-xl font-bold tracking-wider text-white truncate">Lost & Found Portal</h1>
-            <div class="hidden md:flex space-x-4">
-                <a href="feed.html" class="text-white border-b-2 border-white pb-1 font-semibold">Feed</a>
-                <button id="reportItemBtn" class="text-neutral-400 hover:text-white transition pb-1">Report an Item</button>
-                <a href="my-claims.html" class="text-neutral-400 hover:text-white transition pb-1">My Claims</a>
+        <!-- Kaliwa: pamagat at desktop tabs -->
+        <div class="flex items-center gap-4 sm:gap-6 min-w-0">
+            <!-- FIX: dati "hidden md:block" kaya nawawala sa mobile. Ngayon visible na sa lahat ng screen -->
+            <h1 class="text-base sm:text-lg font-bold tracking-wide whitespace-nowrap truncate">Lost & Found Portal</h1>
+            <div class="hidden md:flex items-center bg-neutral-800 rounded-lg p-1 gap-1">
+                <a href="feed.html" class="whitespace-nowrap px-4 py-1.5 rounded-md bg-neutral-600 text-white text-sm font-bold shadow transition">Feed</a>
+                <button id="reportItemBtn" class="whitespace-nowrap px-4 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-neutral-700 text-sm font-medium transition">Report an Item</button>
+                <a href="my-claims.html" class="whitespace-nowrap px-4 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-neutral-700 text-sm font-medium transition">My Claims</a>
             </div>
         </div>
 
-        <!-- Right side -->
+        <!-- Kanan: settings, bell, pangalan, avatar, logout, at hamburger -->
         <div class="flex items-center gap-2 sm:gap-4 shrink-0">
-            <div class="text-right hidden sm:block">
-                <p class="text-sm font-semibold" id="navUserName">Student User</p>
-                <p class="text-[10px] text-neutral-400">University Account</p>
-            </div>
-
-            <div class="h-8 w-8 rounded-full bg-neutral-700 flex items-center justify-center font-bold text-sm">
-                U
-            </div>
-
-            <!-- Settings: nakatago sa mobile, nasa mobile menu -->
-            <a href="profile.html" class="hidden sm:block text-neutral-400 hover:text-white transition p-1" title="Account Settings">
+            <a href="profile.html" class="hidden md:block text-neutral-300 hover:text-white p-1" title="Account Settings">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
             </a>
 
-            <!-- Notification Bell -->
-            <div class="relative">
-                <button id="notifBellBtn" class="relative text-neutral-400 hover:text-white transition p-1" title="Notifications">
+            <!-- Notification bell -->
+            <!-- FIX: wrapper is only "relative" on sm+ so on mobile the dropdown anchors to the navbar (full width, no overflow) -->
+            <div class="sm:relative">
+                <button id="notifBellBtn" class="relative text-neutral-300 hover:text-white transition p-1" title="Notifications">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                     </svg>
                     <span id="notifBadge" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center">0</span>
                 </button>
 
-                <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 max-w-[90vw] bg-white text-neutral-800 rounded-xl shadow-2xl border border-neutral-200 z-50 overflow-hidden">
+                <!-- FIX: mobile = pinned under the navbar with 12px side margins; sm+ = dropdown under the bell -->
+                <div id="notifDropdown" class="hidden absolute left-3 right-3 top-full mt-2 sm:left-auto sm:right-0 sm:top-full sm:w-80 bg-white text-neutral-800 rounded-xl shadow-2xl border border-neutral-200 z-50 overflow-hidden">
                     <div class="flex justify-between items-center px-4 py-3 border-b border-neutral-200">
                         <span class="font-bold text-sm">Notifications</span>
-                        <button id="notifMarkAllBtn" class="text-xs text-blue-600 hover:text-blue-800 hover:underline">Mark all as read</button>
-                        <button id="notifClearAllBtn" class="text-xs text-red-600 hover:text-red-800 hover:underline">Clear all</button>
+                        <div class="flex gap-3">
+                            <button id="notifMarkAllBtn" class="text-xs text-blue-600 hover:text-blue-800 hover:underline">Mark all read</button>
+                            <button id="notifClearAllBtn" class="text-xs text-red-600 hover:text-red-800 hover:underline">Clear all</button>
+                        </div>
                     </div>
-                    <div id="notifList" class="max-h-96 overflow-y-auto"></div>
+                    <div id="notifList" class="max-h-[60vh] sm:max-h-96 overflow-y-auto"></div>
                 </div>
             </div>
 
-            <!-- Logout: desktop lang -->
-            <button id="logoutBtn" class="hidden md:block text-xs border border-neutral-600 px-3 py-1.5 rounded-md text-neutral-300 hover:text-white hover:bg-neutral-800 transition">
-                Logout
-            </button>
+            <div class="hidden lg:block text-right leading-tight">
+                <p id="navUserName" class="text-sm font-semibold max-w-[140px] truncate">Student User</p>
+                <p class="text-[10px] text-neutral-400">University Account</p>
+            </div>
 
-            <!-- Hamburger: mobile lang -->
+            <span class="user-initial-circle bg-neutral-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold uppercase shrink-0">U</span>
+
+            <button id="logoutBtn" class="hidden md:block border border-neutral-600 px-4 py-1.5 rounded hover:bg-neutral-800 text-sm transition">Logout</button>
+
             <button id="mobileMenuBtn" class="md:hidden text-neutral-300 hover:text-white p-1" aria-label="Menu">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -94,16 +118,16 @@
         </div>
     </div>
 
-    <!-- Mobile menu (lalabas kapag pinindot ang hamburger) -->
+    <!-- Mobile menu -->
     <div id="mobileNavMenu" class="hidden md:hidden mt-3 pt-3 border-t border-neutral-700 space-y-1">
         <div class="flex items-center gap-3 px-2 py-2">
-            <div class="h-8 w-8 rounded-full bg-neutral-700 flex items-center justify-center font-bold text-sm shrink-0">U</div>
+            <span class="user-initial-circle bg-neutral-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold uppercase shrink-0">U</span>
             <div>
-                <p class="text-sm font-semibold" id="mobileNavUserName">Student User</p>
+                <p id="mobileNavUserName" class="text-sm font-semibold">Student User</p>
                 <p class="text-[10px] text-neutral-400">University Account</p>
             </div>
         </div>
-        <a href="feed.html" class="block px-2 py-2 rounded-md font-semibold bg-neutral-800">Feed</a>
+        <a href="feed.html" class="block px-2 py-2 rounded-md bg-neutral-800 font-semibold">Feed</a>
         <button id="openReportBtnMobile" class="block w-full text-left px-2 py-2 rounded-md text-neutral-300 hover:bg-neutral-800">Report an Item</button>
         <a href="my-claims.html" class="block px-2 py-2 rounded-md text-neutral-300 hover:bg-neutral-800">My Claims</a>
         <a href="profile.html" class="block px-2 py-2 rounded-md text-neutral-300 hover:bg-neutral-800">Account Settings</a>
@@ -156,7 +180,7 @@
         <div class="bg-neutral-200 p-4 sm:p-6 rounded-xl border border-neutral-300 w-full max-w-lg shadow-2xl relative">
 
             <button id="closeReportBtn" class="absolute top-3 right-4 text-neutral-700 hover:text-gray-900 text-xl font-bold">&times;</button>
-            <h2 class="text-lg sm:text-xl font-bold text-neutral-700 mb-4">Report an Item</h2>
+            <h2 class="text-lg sm:text-xl font-bold text-neutral-700 mb-4 pr-8">Report an Item</h2>
 
             <form id="reportForm" class="space-y-3">
                 <div>
@@ -234,7 +258,7 @@
 
         <!-- ITEM DETAILS MODAL -->
         <div id="itemDetailsModal" class="fixed inset-0 bg-black/80 hidden flex justify-center items-center z-50 backdrop-blur-sm p-3 sm:p-4">
-            <div class="bg-white p-5 sm:p-6 rounded-xl border border-neutral-300 w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="bg-white p-4 sm:p-6 rounded-xl border border-neutral-300 w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeItemDetails()" class="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/80 text-white text-xl font-bold leading-none shadow-md transition">&times;</button>
                 
                 <!-- Image Container -->
@@ -243,20 +267,20 @@
                 </div>
                 
                 <div class="flex justify-between items-start mb-2 gap-2">
-                    <h2 id="detailName" class="text-xl sm:text-2xl font-bold text-neutral-900 break-words">Item Name</h2>
+                    <h2 id="detailName" class="text-xl sm:text-2xl font-bold text-neutral-900 break-words min-w-0">Item Name</h2>
                     <span id="detailStatus" class="text-xs font-bold px-2 py-1 rounded tracking-wide shrink-0">STATUS</span>
                 </div>
                 
                 <div class="mb-3 flex flex-col gap-1">
                     <p class="text-sm text-gray-500">Category: <span id="detailCategory" class="font-medium text-gray-800"></span></p>
-                    <p class="text-sm text-gray-500">Posted by: <span id="detailPosterName" class="font-medium text-gray-800"></span></p>
+                    <p class="text-sm text-gray-500">Posted by: <span id="detailPosterName" class="font-medium text-gray-800 break-words"></span></p>
                 </div>
                 <div class="bg-neutral-50 p-3.5 sm:p-4 rounded-lg border border-neutral-200 mb-4">
                     <p class="text-xs sm:text-sm text-neutral-800 font-semibold mb-1">Description:</p>
                     <p id="detailDesc" class="text-xs sm:text-sm text-neutral-600 mb-3 break-words">Description here.</p>
                     
                     <p class="text-xs sm:text-sm text-neutral-800 font-semibold mb-1">Location & Date:</p>
-                    <p class="text-xs sm:text-sm text-neutral-600">📍 <span id="detailLocation">Location</span></p>
+                    <p class="text-xs sm:text-sm text-neutral-600 break-words">📍 <span id="detailLocation">Location</span></p>
                     
                     <!-- GOOGLE MAPS LINK -->
                     <a id="detailMapLink" href="#" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 hover:underline hidden ml-5 mb-2 block font-medium">View exact location in Google Maps</a>
