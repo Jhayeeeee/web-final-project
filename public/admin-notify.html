@@ -13,7 +13,7 @@
 
         <!-- Kaliwa: pamagat at desktop tabs -->
         <div class="flex items-center gap-4 sm:gap-6 min-w-0">
-            <h1 class="hidden md:block text-lg font-bold tracking-wide">Admin Panel</h1>
+            <h1 class="text-base sm:text-lg font-bold tracking-wide whitespace-nowrap truncate">Admin Panel</h1>
             <div class="hidden md:flex items-center bg-neutral-800 rounded-lg p-1 gap-1">
                <a href="admin.html" class="whitespace-nowrap px-4 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-neutral-700 text-sm font-medium transition">Inventory</a>
                 <a href="admin-reports.html" class="whitespace-nowrap px-4 py-1.5 rounded-md text-gray-400 hover:text-white hover:bg-neutral-700 text-sm font-medium transition">Post Management</a>
@@ -44,7 +44,10 @@
     <div id="adminMobileMenu" class="hidden md:hidden mt-3 pt-3 border-t border-neutral-700 space-y-1">
         <div class="flex items-center gap-3 px-2 py-2">
             <span id="adminInitialsMobile" class="bg-neutral-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold uppercase shrink-0">AD</span>
-            <p id="adminNameMobile" class="text-sm font-semibold truncate">Admin Account</p>
+            <div>
+                    <p id="adminNameMobile" class="text-sm font-semibold truncate">Admin Account</p>
+                    <p class="text-[10px] text-neutral-400">Admin Account</p>
+            </div>
         </div>
         <a href="admin.html" class="block px-2 py-2 rounded-md text-neutral-300 hover:bg-neutral-800">Inventory</a>
         <a href="admin-reports.html" class="block px-2 py-2 rounded-md text-neutral-300 hover:bg-neutral-800">Post Management</a>
