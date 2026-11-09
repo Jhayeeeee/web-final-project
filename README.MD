@@ -1,13 +1,33 @@
 # Smart Campus Lost and Found Portal
 
-### Web Development Final Project
+**Project Title:** Smart Campus Lost and Found Portal
 
-| Field | Details |
+**GitHub Repository:** [https://github.com/Jhayeeeee/web-final-project](https://github.com/Jhayeeeee/web-final-project)
+
+**Live Application:** [https://lostfound-api-n29y.onrender.com](https://lostfound-api-n29y.onrender.com)
+
+---
+
+## Technology Stack
+
+| Category | Technologies |
 |---|---|
-| Developer | Jan Ezekiel Villamor |
-| Institution | Pamantasan ng Lungsod ng Maynila (PLM) |
-| Stack | Node.js, Express, MongoDB Atlas (Mongoose), Multer, Cloudinary, JWT, bcrypt, Vanilla JS, Tailwind CSS |
-| Deployment | Render (backend and static pages), GitHub (source) |
+| **Frontend** | HTML5, Tailwind CSS (CDN), Vanilla JavaScript |
+| **Backend** | Node.js, Express.js, Multer, bcrypt, JSON Web Token (JWT) |
+| **Database** | MongoDB Atlas with Mongoose |
+| **API** | RESTful API under `/api`, Cloudinary (image storage), Google Maps and Gmail (external links) |
+| **Modern/Edge Features** | Render (cloud hosting), Cloudinary CDN, GitHub continuous deployment, JWT stateless authentication, Geolocation API, UptimeRobot monitoring |
+
+---
+
+## Admin Account
+
+| Field | Value |
+|---|---|
+| **Username** | `[admin email]` |
+| **Password** | `[admin password]` |
+
+> Admin accounts are not created through the registration page. Register a normal account, then set its `role` to `"admin"` in MongoDB Atlas.
 
 ---
 
@@ -43,7 +63,7 @@ Lost items on campus are often posted across scattered Facebook groups and freed
 | Claim | Mark surrendered items as claimed after the owner collects them |
 | Delete | Delete any post |
 | Post Management | Review reported posts, dismiss reports, ban or unban accounts |
-| Ban behavior | Banning deletes that user's posts |
+| Ban behavior | Banning deletes that user's posts and blocks login and API access immediately |
 | Banned Accounts | List of banned users with an unban option |
 | Broadcast | Send a notification to all students |
 | Export | Export the inventory as a CSV report |
@@ -60,21 +80,6 @@ Lost items on campus are often posted across scattered Facebook groups and freed
 | Cloudinary | Cloud | Stores item images. Returns a `secure_url` saved in the database |
 
 The browser never talks to MongoDB or Cloudinary directly. Only the Render server does. Images are uploaded to Cloudinary, and only the returned URL is stored in the database.
-
----
-
-## Tech Stack
-
-| Layer | Technology | Purpose |
-|---|---|---|
-| Frontend | HTML5, Tailwind CSS (CDN), Vanilla JavaScript | Pages and interactivity |
-| Backend | Node.js, Express | REST API and static file serving |
-| Database | MongoDB Atlas, Mongoose | Users, items, notifications |
-| Image storage | Cloudinary | Item photos |
-| Upload handling | Multer (memory storage, 5 MB limit) | Receives images before sending to Cloudinary |
-| Authentication | JWT (24-hour tokens), bcrypt | Login sessions and password hashing |
-| Hosting | Render | Runs the server and serves the pages |
-| Uptime | UptimeRobot | Pings the server every 5 minutes |
 
 ---
 
@@ -103,7 +108,7 @@ The server enforces roles in every protected route. The role is stored in the JW
 | email | String | Required, unique, must end with `@university.edu.ph` |
 | password | String | bcrypt hash |
 | role | String | `user` or `admin` |
-| isBanned | Boolean | Blocks login when true |
+| isBanned | Boolean | Blocks login and API access when true |
 
 ### Item (`models/item.js`)
 
@@ -266,7 +271,6 @@ Every push to `main` redeploys automatically.
 | Limitation | Details |
 |---|---|
 | Free tier sleep | Render's free plan spins down after inactivity, so the first request can take up to a minute |
-| Token lifetime | A role change or ban takes effect after the token expires (24 hours) or the user logs in again. `verifyToken` does not check `isBanned` on each request |
 | Password policy | Server requires at least 6 characters. No stronger rule |
 | Email verification | Registration accepts any `@university.edu.ph` address without confirming ownership |
 
@@ -279,7 +283,6 @@ Every push to `main` redeploys automatically.
 | Campus map | Interactive map (Leaflet or Mapbox) with item pins |
 | Email notifications | Nodemailer alerts when a matching item is posted |
 | QR claim slips | QR codes for items surrendered to the admin office |
-| Stronger ban check | Re-check `isBanned` on each request, and add a token refresh flow |
 
 ---
 
