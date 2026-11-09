@@ -1,187 +1,286 @@
 # Smart Campus Lost and Found Portal
-### *Web Development Final Project — System Walkthrough & Developer POV*
 
-> **Developer:** Jan Ezekiel Villamor  
-> **Institution:** Pamantasan ng Lungsod ng Maynila (PLM)  
-> **Course/Project:** Web Development Final Project  
-> **Stack:** Node.js, Express.js, MongoDB (Mongoose), Multer, Vanilla JS, Tailwind CSS  
+### Web Development Final Project
 
----
-
-## 💡 Project Background & Motivation (My POV)
-
-As a university student, I noticed a recurring problem across our campus: students frequently lose valuable belongings—student IDs, earphones, calculators, tumblers, and wallets. Usually, people post about lost or found items across scattered Facebook groups, private group chats, or freedom walls, where posts easily get buried and lost in the feed. There was no single, organized, campus-wide source of truth.
-
-I built this **Smart Campus Lost and Found Web Portal** as my final project to solve that exact problem. 
-
-My goal was to create a full-stack, responsive platform where students can:
-1. Immediately report lost or found items with photos and descriptions.
-2. Tag the exact campus building, room, and even GPS coordinates using geolocation.
-3. Search and filter through active reports in real time.
-4. Contact the finder or owner directly with one click via Gmail.
-5. Provide campus administrators with a dedicated dashboard to catalog surrendered items and mark resolved claims.
+| Field | Details |
+|---|---|
+| Developer | Jan Ezekiel Villamor |
+| Institution | Pamantasan ng Lungsod ng Maynila (PLM) |
+| Stack | Node.js, Express, MongoDB Atlas (Mongoose), Multer, Cloudinary, JWT, bcrypt, Vanilla JS, Tailwind CSS |
+| Deployment | Render (backend and static pages), GitHub (source) |
 
 ---
 
-##  How I Architected the System
+## Overview
 
-When designing this application, I opted for a lightweight yet robust full-stack architecture:
-
-```
-[ Frontend: HTML5 / Tailwind CSS / Vanilla JS ]
-                    │
-                    ▼  (Fetch API / JSON & Multipart Forms)
-[ Backend: Node.js & Express.js REST API (server.js) ]
-         ├── Multer Middleware (Local Image Storage in /public/uploads)
-         ├── bcrypt (Password Hashing & Security)
-         └── Mongoose ODM (Data Modeling & Queries)
-                    │
-                    ▼
-[ Database: MongoDB Atlas (Cloud Database) ]
-```
-
-### Why I Chose This Tech Stack:
-- **Node.js & Express.js**: I chose Node and Express for the backend because they allow me to build clean, asynchronous REST API endpoints quickly while keeping the entire project in JavaScript.
-- **MongoDB & Mongoose**: Since lost and found items can have optional fields (like GPS coordinates, image URLs, room details), a NoSQL document database offered the schema flexibility I needed.
-- **Multer**: For storing photo uploads on the server disk (`public/uploads/`) with unique timestamps to prevent duplicate file overwrites.
-- **Tailwind CSS (via CDN) & Glassmorphism UI**: I wanted the UI to feel modern, sleek, and premium right out of the box without the heavy build step of complex frontend frameworks.
-- **Vanilla JavaScript**: Writing the frontend logic in modular Vanilla JS (`feed.js`, `admin.js`, `my-claims.js`, `auth.js`) gave me full control over DOM manipulation, event listeners, and API fetch calls.
+Lost items on campus are often posted across scattered Facebook groups and freedom walls, where posts get buried quickly. This portal gives students one organized place to report lost and found items, search the active feed, contact the other party, and track their own posts. Campus admins get a dashboard to manage surrendered items, review reported posts, and manage accounts.
 
 ---
 
-## Core Features & How I Built Them
+## Features
 
-Here is an explanation of the key modules I developed and how they work under the hood:
+### Student Features
 
-### 1. User Authentication & Campus Security
-- **Domain Restriction**: In `server.js`, I added validation to ensure only official university emails (e.g., ending with `@university.edu.ph`) can register. This keeps the portal exclusive and accountable to campus students.
-- **Password Security**: Passwords are never saved in plain text. I used `bcrypt` with a salt factor of 10 to hash passwords during registration and verify them during login.
-- **Role-Based Access**: Each user has a `role` (`student` or `admin`). Regular students can report items and browse the feed, while users with the `admin` role get access to the administrative inventory management dashboard.
+| Feature | Description |
+|---|---|
+| Account | Register and log in with a university email (`@university.edu.ph`) |
+| Report item | Report a lost or found item with a photo, description, category, date, and campus location |
+| GPS location | Auto-detect GPS location and link it to Google Maps |
+| Search and filter | Search the public feed by text, category, and status (All, Lost, Found) |
+| Contact | Contact the owner or finder through a prepared Gmail message |
+| Report spam | Report spam or inappropriate posts |
+| My Claims | Manage own posts: mark as found, mark as returned, surrender to admin, or delete |
+| Surrender | Surrender a found item to the admin office |
+| Notifications | View and clear in-app notifications (bell icon) |
+| Account Settings | Change password and view account information |
 
-### 2. Smart Campus Location Tagging & GPS Pinning
-In the item report modal (`feed.js` and `feed.html`):
-- **Cascading Dropdowns**: I mapped out specific PLM campus structures (such as *Gusaling Corazon Aquino (GCA)*, *Gusaling Villegas (GV)*, *University Library*, and *Campus Grounds*). When a user picks a building, the second dropdown dynamically populates with the rooms/areas belonging to that specific building.
-- **HTML5 Geolocation API**: I added a *"Pin Current Location"* button that requests the user's browser GPS coordinates (`navigator.geolocation.getCurrentPosition`). It automatically fills the latitude and longitude fields.
-- **Google Maps Integration**: When viewing an item card, if GPS coordinates exist, the modal renders a clickable link that opens the exact location directly on Google Maps (`https://www.google.com/maps?q=lat,lng`).
+### Admin Features
 
-### 3. Image Uploads with Multer
-- In `server.js`, I configured `multer.diskStorage` to save uploaded item photos to `public/uploads/`.
-- Every uploaded file is assigned a unique name using `Date.now() + path.extname(file.originalname)` to prevent files with the same name from colliding.
-- The resulting URL path is stored in the MongoDB item document and served statically.
-
-### 4. Interactive Feed with Instant Client-Side Filters
-- All items are fetched from `/api/items` and kept in memory on `feed.js`.
-- I added real-time filtering so users don't have to reload the page:
-  - **Live search bar**: Matches against both item title and description.
-  - **Category filter**: Electronics, IDs & Cards, Bags, Documents, Personal Accessories, etc.
-  - **Status filter radio buttons**: View "All", only "Lost", or only "Found".
-
-### 5. Direct Finder/Owner Communication
-- Rather than building a slow internal chat, I integrated a direct Gmail trigger.
-- When a student clicks **"Contact Finder"** or **"Contact Owner"**, the system generates an encoded `mail.google.com` link pre-populated with the recipient's university email, a clear subject line, and a polite template message.
-
-### 6. Personal Claims & Reports Tracker (`my-claims.html`)
-- Students can visit the **My Claims** page to see an isolated list of items that *they* personally reported.
-- It compares the logged-in user's ID against `item.reportedBy` so students can track the status of their own belongings.
-
-### 7. Admin Dashboard & Inventory Management (`admin.html`)
-- Protected route: non-admin users attempting to open `admin.html` are alerted and redirected back to `index.html`.
-- **Live Statistics Cards**: Shows total items, items currently surrendered to the admin office, and successfully claimed items.
-- **Status Transitions**: Admins can update item status to `surrendered` (turned over to the Lost & Found office) or `claimed` (returned to the rightful owner).
-- **Deletion**: Admins can remove resolved or spam items permanently.
+| Feature | Description |
+|---|---|
+| Dashboard | Item statistics: total, at admin office, claimed |
+| Inventory | Filter and search all items by status |
+| Claim | Mark surrendered items as claimed after the owner collects them |
+| Delete | Delete any post |
+| Post Management | Review reported posts, dismiss reports, ban or unban accounts |
+| Ban behavior | Banning deletes that user's posts |
+| Banned Accounts | List of banned users with an unban option |
+| Broadcast | Send a notification to all students |
+| Export | Export the inventory as a CSV report |
 
 ---
 
-## 🗄️ Database Schemas (Data Design)
+## System Architecture
 
-### 1. `User` Schema (`models/user.js`)
-```javascript
-{
-  fullName: { type: String, required: true },
-  email:    { type: String, required: true, unique: true },
-  password: { type: String, required: true }, // Hashed with bcrypt
-  role:     { type: String, enum: ['student', 'admin'], default: 'student' },
-  timestamps: true
-}
-```
+| Component | Location | Responsibility |
+|---|---|---|
+| Browser (Client) | User's device | Runs HTML, Tailwind, and Vanilla JS. Stores token and user in localStorage |
+| Render (Web Service) | Render | Runs Express `server.js`. Serves `public/` files, REST API under `/api`, JWT auth, role checks, multer uploads |
+| MongoDB Atlas | Cloud | Stores `users`, `items`, and `notifications` |
+| Cloudinary | Cloud | Stores item images. Returns a `secure_url` saved in the database |
 
-### 2. `Item` Schema (`models/item.js`)
-```javascript
-{
-  itemName:     { type: String, required: true },
-  description:  { type: String, required: true },
-  category:     { type: String, required: true },
-  status:       { type: String, enum: ['lost', 'found', 'claimed', 'surrendered'], required: true },
-  location:     { type: String, required: true },
-  incidentDate: { type: String, required: true },
-  reportedBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  imageURL:     { type: String },
-  latitude:     { type: Number },
-  longitude:    { type: Number },
-  dateReported: { type: Date, default: Date.now }
-}
-```
-
----
-## 🧪 Testing Guide (How to Try All Roles)
-
-### Testing as a Student:
-1. Go to `http://localhost:3000/register.html`.
-2. Register an account using an email ending in `@university.edu.ph` (e.g. `student@university.edu.ph`).
-3. Log in at `index.html`. You will be directed to `feed.html`.
-4. Click **"Report Item"**, upload a picture, select a campus building/room, pin your location, and submit.
-5. Search and filter your new item on the feed.
-6. Check `my-claims.html` to see your personal reported item list.
-
-### Testing as an Admin:
-1. Register an account as usual.
-2. In your MongoDB database (via MongoDB Atlas dashboard or MongoDB Compass), open the `users` collection.
-3. Find your user document and update the `role` field from `"student"` to `"admin"`:
-   ```json
-   {
-     "role": "admin"
-   }
-   ```
-4. Re-login or navigate to `http://localhost:3000/admin.html`.
-5. You will now have access to the Admin Dashboard to change item statuses to `surrendered` or `claimed`, or delete items.
+The browser never talks to MongoDB or Cloudinary directly. Only the Render server does. Images are uploaded to Cloudinary, and only the returned URL is stored in the database.
 
 ---
 
-## 📂 Project Directory Structure
+## Tech Stack
 
-```text
-web-final-project/
-├── models/
-│   ├── item.js            # Mongoose item schema definition
-│   └── user.js            # Mongoose user schema & role definition
-├── public/                # Client-facing web pages and assets
-│   ├── index.html         # Login portal with university email styling
-│   ├── register.html      # Registration portal
-│   ├── feed.html          # Lost and Found community feed & report modal
-│   ├── feed.js            # Client logic for feed, filters, geolocation & modal
-│   ├── my-claims.html     # User's personal reported items page
-│   ├── my-claims.js       # Logic filtering items reported by the current user
-│   ├── admin.html         # Admin inventory & status control dashboard
-│   ├── admin.js           # Admin table, statistics, status update & delete logic
-│   ├── auth.js            # Client-side helper functions for session & logout
-│   └── uploads/           # Server directory where uploaded item images reside
-├── .env                   # Environment secrets (MongoDB URI & PORT) - gitignored
-├── .env.example           # Template for environment configuration
-├── .gitignore             # Git ignore file protecting node_modules & .env
-├── package.json           # Dependencies and project start script
-├── server.js              # Express app, Multer config, REST API routes
-└── README.MD              # System walkthrough & Developer POV (this file)
-```
+| Layer | Technology | Purpose |
+|---|---|---|
+| Frontend | HTML5, Tailwind CSS (CDN), Vanilla JavaScript | Pages and interactivity |
+| Backend | Node.js, Express | REST API and static file serving |
+| Database | MongoDB Atlas, Mongoose | Users, items, notifications |
+| Image storage | Cloudinary | Item photos |
+| Upload handling | Multer (memory storage, 5 MB limit) | Receives images before sending to Cloudinary |
+| Authentication | JWT (24-hour tokens), bcrypt | Login sessions and password hashing |
+| Hosting | Render | Runs the server and serves the pages |
+| Uptime | UptimeRobot | Pings the server every 5 minutes |
 
 ---
 
-## Future Enhancements (What I Plan to Add Next)
+## Access Control (RBAC)
 
-If I continue expanding this system beyond this course project, here are the top features I want to integrate:
-- **Interactive Campus Map**: Replace static coordinate links with an interactive Leaflet/Mapbox canvas showing pins across the PLM campus in real time.
-- **Automated Email Notifications**: Use `Nodemailer` to send instant email alerts to an owner whenever an item matching their description is posted.
-- **QR Code Claim Slips**: Generate unique QR codes for items surrendered to the Admin office to streamline verification when students come to claim them.
+| Role | How it is set | Access |
+|---|---|---|
+| `user` (student) | Default on registration | Own posts, feed, reports, notifications, settings |
+| `admin` | Set manually in MongoDB Atlas | Everything above, plus inventory, post management, bans, broadcast |
+
+The server enforces roles in every protected route. The role is stored in the JWT at login, so a role change takes effect after logging out and back in. The frontend also redirects users based on role, but the server check is the real protection.
+
+| Rule | Who can do it |
+|---|---|
+| Update or delete a post | Owner (limited status changes) or admin (any post) |
 
 ---
 
-*Thank you for taking the time to review my final project! Feel free to explore the code or submit an issue/pull request if you have suggestions.*
+## Database Design
+
+### User (`models/user.js`)
+
+| Field | Type | Notes |
+|---|---|---|
+| fullName | String | Required |
+| email | String | Required, unique, must end with `@university.edu.ph` |
+| password | String | bcrypt hash |
+| role | String | `user` or `admin` |
+| isBanned | Boolean | Blocks login when true |
+
+### Item (`models/item.js`)
+
+| Field | Type | Notes |
+|---|---|---|
+| itemName, description | String | Required |
+| category | String | Electronics, IDs & Cards, Bags, Others |
+| status | String | `lost`, `found`, `surrendered`, `claimed` |
+| location | String | Building and room, or "GPS Location Tagged" |
+| incidentDate | String | Date of loss or finding |
+| reportedBy | ObjectId | Reference to User |
+| imageURL | String | Cloudinary `secure_url` |
+| latitude, longitude | Number | Optional GPS |
+| reportCount, reportedByUsers | Number, Array | Spam reports |
+| dateReported | Date | Default: now |
+
+### Notification (`models/notification.js`)
+
+| Field | Type | Notes |
+|---|---|---|
+| recipient | ObjectId | Reference to User |
+| type | String | `item_claimed` or `admin_broadcast` |
+| title, message | String | Content |
+| item | ObjectId | Optional reference to Item |
+| isRead | Boolean | Read state |
+
+---
+
+## Item Status Flow
+
+| From | To | Who | Meaning |
+|---|---|---|---|
+| lost | claimed | Owner | Owner found it, closes the post |
+| found | claimed | Owner | Owner got the item back |
+| found | surrendered | Owner (finder) | Finder gives the item to the admin office |
+| surrendered | claimed | Admin | Owner collected the item from the admin office |
+
+Only admins can set `claimed` on a surrendered item.
+
+---
+
+## API Overview
+
+| Method | Route | Access | Purpose |
+|---|---|---|---|
+| POST | `/api/register` | Public | Create student account |
+| POST | `/api/login` | Public | Log in and receive token |
+| PUT | `/api/users/change-password` | Logged in | Change own password |
+| GET | `/api/users` | Admin | List non-admin accounts |
+| PUT | `/api/users/:id/ban` | Admin | Ban or unban (toggle) |
+| GET | `/api/items` | Public | List all items |
+| POST | `/api/items` | Logged in | Report item with optional image |
+| DELETE | `/api/items/:id` | Owner or admin | Delete post |
+| PUT | `/api/items/:id/status` | Owner (limited) or admin | Update status |
+| POST | `/api/items/:id/report` | Logged in | Report a post as spam |
+| PUT | `/api/items/:id/dismiss-report` | Admin | Clear reports |
+| GET | `/api/notifications` | Logged in | Get own notifications |
+| PUT | `/api/notifications/:id/read` | Logged in | Mark one as read |
+| PUT | `/api/notifications/read-all` | Logged in | Mark all as read |
+| DELETE | `/api/notifications/:id` | Logged in | Delete one notification |
+| DELETE | `/api/notifications` | Logged in | Clear all own notifications |
+| POST | `/api/admin/notifications/broadcast` | Admin | Notify all students |
+| GET | `/api/test` | Public | Health check (used by UptimeRobot) |
+
+---
+
+## Project Structure
+
+| File | Purpose |
+|---|---|
+| `models/user.js` | User schema (role, isBanned) |
+| `models/item.js` | Item schema (status, imageURL, GPS) |
+| `models/notification.js` | Notification schema |
+| `public/config.js` | `API_BASE` and `imgSrc()` helper |
+| `public/index.html` | Login page |
+| `public/register.html` | Registration page |
+| `public/auth.js` | Login and registration logic |
+| `public/feed.html` / `feed.js` | Public feed, report form, contact |
+| `public/my-claims.html` / `my-claims.js` | Own posts and status actions |
+| `public/profile.html` / `profile.js` | Account settings and password change |
+| `public/admin.html` / `admin.js` | Inventory dashboard |
+| `public/admin-reports.html` / `admin-report.js` | Post management |
+| `public/admin-notify.html` / `admin-notify.js` | Broadcast notification |
+| `public/admin-banned.html` / `admin-banned.js` | Banned accounts |
+| `public/admin-nav.js` | Admin navbar mobile menu |
+| `public/notifications.js` | Bell dropdown (student) |
+| `server.js` | Express app, routes, Cloudinary upload |
+| `package.json` | Dependencies and scripts |
+| `.env.example` | Template for environment variables |
+| `.gitignore` | Excludes `node_modules` and `.env` |
+
+---
+
+## Environment Variables
+
+Create a `.env` file for local development. On Render, set the same keys under **Environment**.
+
+| Variable | Description |
+|---|---|
+| `MONGO_URI` | MongoDB Atlas connection string, including `/LostAndFoundDB` |
+| `JWT_SECRET` | Long random string used to sign tokens |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+| `PORT` | Server port (default `3000`) |
+
+Never commit `.env` or paste secrets in code, screenshots, or chat.
+
+---
+
+## Running Locally
+
+| Step | Command |
+|---|---|
+| Install dependencies | `npm install` |
+| Start the server | `node server.js` |
+| Open the app | `http://localhost:3000/index.html` |
+
+---
+
+## Testing Guide
+
+### As a Student
+
+| Step | Action |
+|---|---|
+| 1 | Register with an `@university.edu.ph` email |
+| 2 | Log in. You are redirected to the feed |
+| 3 | Report an item with a photo, building, and room. Optionally pin your GPS location |
+| 4 | Check that the item appears in the feed and in My Claims |
+| 5 | Open another account and try Claim Item or Contact Owner |
+
+### As an Admin
+
+| Step | Action |
+|---|---|
+| 1 | Register an account normally |
+| 2 | In MongoDB Atlas, open `users`, find the account, and set `role` to `"admin"` |
+| 3 | Log out and log in again, since the role is read from the token at login |
+| 4 | Check the Inventory, Post Management, Banned Accounts, and Notifications pages |
+
+---
+
+## Deployment
+
+| Step | Action |
+|---|---|
+| 1 | Push the repository to GitHub |
+| 2 | On Render, create a Web Service from the repo |
+| 3 | Set Build Command to `npm install` and Start Command to `node server.js` |
+| 4 | Add the environment variables listed above |
+| 5 | Optional: create an UptimeRobot monitor for `https://<your-service>.onrender.com/api/test` with a 5-minute interval |
+
+Every push to `main` redeploys automatically.
+
+---
+
+## Known Limitations
+
+| Limitation | Details |
+|---|---|
+| Free tier sleep | Render's free plan spins down after inactivity, so the first request can take up to a minute |
+| Token lifetime | A role change or ban takes effect after the token expires (24 hours) or the user logs in again. `verifyToken` does not check `isBanned` on each request |
+| Password policy | Server requires at least 6 characters. No stronger rule |
+| Email verification | Registration accepts any `@university.edu.ph` address without confirming ownership |
+
+---
+
+## Future Enhancements
+
+| Enhancement | Description |
+|---|---|
+| Campus map | Interactive map (Leaflet or Mapbox) with item pins |
+| Email notifications | Nodemailer alerts when a matching item is posted |
+| QR claim slips | QR codes for items surrendered to the admin office |
+| Stronger ban check | Re-check `isBanned` on each request, and add a token refresh flow |
+
+---
+
+*Developed by Jan Ezekiel Villamor as a Web Development final project.*
